@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/joho/godotenv"
 	"google.golang.org/genai"
 )
@@ -36,21 +37,19 @@ func main() {
 		{FunctionDeclarations: []*genai.FunctionDeclaration{&getFileContent}},
 	}
 
-	contents := []*genai.Content{
-		{
-			Role:  "user",
-			Parts: []*genai.Part{{Text: "Describe the contents of main.go in this same directory"}},
-		},
+	msgBuf := msgbuf.NewMsgBuf()
+	msgBuf.AddText("Describe the contents of main.go in this same directory")
+
+	contentConfig := genai.GenerateContentConfig{
+		Tools:             tools,
+		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
 	result, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.5-flash",
-		contents,
-		&genai.GenerateContentConfig{
-			Tools:             tools,
-			SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
-		},
+		msgBuf.Messages,
+		&contentConfig,
 	)
 
 	if err != nil {
