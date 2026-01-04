@@ -46,61 +46,65 @@ func main() {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	response, err := client.Models.GenerateContent(
-		ctx,
-		"gemini-2.5-flash",
-		msgBuf.Messages,
-		&contentConfig,
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	funCall := response.Candidates[0].Content.Parts[0].FunctionCall
-	fmt.Println(funCall.Args)
-	fmt.Println(funCall.Name)
-
-	var funCallResponsePart *genai.Part
-
-	switch funCall.Name {
-	case "getFileContent":
-		// Read the contents of the given file.
-		path := funCall.Args["filepath"].(string)
-		dat, err := os.ReadFile(path)
+	// FIXME: 20 is hardcoded as the number of times to attempt
+	// the function-call loop.
+	for range 20 {
+		response, err := client.Models.GenerateContent(
+			ctx,
+			"gemini-2.5-flash",
+			msgBuf.Messages,
+			&contentConfig,
+		)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fileContents := string(dat)
+		// Add the candidates to the message buffer. This
+		// conforms both to the Gemini documentation, as well
+		// as the Boot.dev AI Agent project.
+		for _, candidate := range response.Candidates {
+			msgBuf.AddMessage(candidate.Content)
+		}
 
-		funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
-			"result": fileContents,
-		})
-	default:
-		funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
-			"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
-		})
+		// Check if the LLM has proposed any function calls to
+		// act upon.
+		funCalls := response.FunctionCalls()
+
+		// The LLM is ready to give a textual response.
+		if len(funCalls) == 0 {
+			fmt.Println(response.Text())
+			break
+		}
+
+		for _, funCall := range funCalls {
+			var funCallResponsePart *genai.Part
+
+			switch funCall.Name {
+			case "getFileContent":
+				// Read the contents of the given file.
+				path := funCall.Args["filepath"].(string)
+				dat, err := os.ReadFile(path)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fileContents := string(dat)
+
+				funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
+					"result": fileContents,
+				})
+			default:
+				funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
+					"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
+				})
+			}
+
+			msgBuf.AddMessage(&genai.Content{
+				Role:  "tool",
+				Parts: []*genai.Part{funCallResponsePart},
+			})
+		}
 	}
-
-	msgBuf.AddMessage(response.Candidates[0].Content)
-	msgBuf.AddMessage(&genai.Content{
-		Role:  "tool",
-		Parts: []*genai.Part{funCallResponsePart},
-	})
-
-	response, err = client.Models.GenerateContent(
-		ctx,
-		"gemini-2.5-flash",
-		msgBuf.Messages,
-		&contentConfig,
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(response.FunctionCalls())
-	fmt.Println(response.Text())
 }
