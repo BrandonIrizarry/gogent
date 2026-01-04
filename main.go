@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/joho/godotenv"
@@ -45,7 +46,7 @@ func main() {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	result, err := client.Models.GenerateContent(
+	response, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.5-flash",
 		msgBuf.Messages,
@@ -56,5 +57,50 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(result.Candidates[0].Content.Parts[0].FunctionCall)
+	funCall := response.Candidates[0].Content.Parts[0].FunctionCall
+	fmt.Println(funCall.Args)
+	fmt.Println(funCall.Name)
+
+	var funCallResponsePart *genai.Part
+
+	switch funCall.Name {
+	case "getFileContent":
+		// Read the contents of the given file.
+		path := funCall.Args["filepath"].(string)
+		dat, err := os.ReadFile(path)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fileContents := string(dat)
+
+		funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
+			"result": fileContents,
+		})
+	default:
+		funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
+			"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
+		})
+	}
+
+	msgBuf.AddMessage(response.Candidates[0].Content)
+	msgBuf.AddMessage(&genai.Content{
+		Role:  "tool",
+		Parts: []*genai.Part{funCallResponsePart},
+	})
+
+	response, err = client.Models.GenerateContent(
+		ctx,
+		"gemini-2.5-flash",
+		msgBuf.Messages,
+		&contentConfig,
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(response.FunctionCalls())
+	fmt.Println(response.Text())
 }
