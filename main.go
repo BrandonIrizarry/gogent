@@ -101,10 +101,7 @@ func main() {
 				})
 			}
 
-			msgBuf.AddMessage(&genai.Content{
-				Role:  "tool",
-				Parts: []*genai.Part{funCallResponsePart},
-			})
+			msgBuf.AddToolPart(funCallResponsePart)
 		}
 	}
 }

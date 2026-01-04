@@ -17,12 +17,13 @@ func (msgBuf *MsgBuf) AddMessage(message *genai.Content) {
 }
 
 func (msgBuf *MsgBuf) AddText(text string) {
-	content := genai.Content{
-		Role: "user",
-		Parts: []*genai.Part{
-			{Text: text},
-		},
-	}
+	content := genai.NewContentFromText(text, "user")
 
-	msgBuf.Messages = append(msgBuf.Messages, &content)
+	msgBuf.Messages = append(msgBuf.Messages, content)
+}
+
+func (msgBuf *MsgBuf) AddToolPart(part *genai.Part) {
+	content := genai.NewContentFromParts([]*genai.Part{part}, "tool")
+
+	msgBuf.Messages = append(msgBuf.Messages, content)
 }
