@@ -20,7 +20,5 @@ func getFileContent(args map[string]any) *genai.Part {
 
 	fileContents := string(dat)
 
-	return genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
-		"result": fileContents,
-	})
+	return responseOK("getFileContent", fileContents)
 }
