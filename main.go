@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -25,6 +26,19 @@ reasons, the tool dispatch code will handle that.
 
 `
 
+func getPrompt() (string, error) {
+	fmt.Println("Ask the agent something (Ctrl+D to finish)")
+	fmt.Print("> ")
+
+	bytes, err := io.ReadAll(os.Stdin)
+
+	if err != nil {
+		return "", fmt.Errorf("Couldn't read user prompt: %w", err)
+	}
+
+	return string(bytes), nil
+}
+
 func main() {
 	// Load our environment variables (including the Gemini API
 	// key.)
@@ -32,7 +46,14 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	// For now, only get 'numIterations' from the user.
 	pargs, err := newProgramArguments()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	initialPrompt, err := getPrompt()
 
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +71,7 @@ func main() {
 	}
 
 	msgBuf := msgbuf.NewMsgBuf()
-	msgBuf.AddText(pargs.initialPrompt)
+	msgBuf.AddText(initialPrompt)
 
 	contentConfig := genai.GenerateContentConfig{
 		Tools:             tools,
