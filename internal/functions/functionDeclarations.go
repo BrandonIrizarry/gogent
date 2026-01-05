@@ -3,7 +3,7 @@ package functions
 import "google.golang.org/genai"
 
 var declarations = map[string]genai.FunctionDeclaration{
-	"getFileContent": genai.FunctionDeclaration{
+	"getFileContent": {
 		Name:        "getFileContent",
 		Description: "Read file contents",
 		Parameters: &genai.Schema{
