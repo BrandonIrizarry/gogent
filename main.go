@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/joho/godotenv"
@@ -26,17 +27,25 @@ reasons, the tool dispatch code will handle that.
 
 `
 
-func getPrompt() (string, error) {
-	fmt.Println("Ask the agent something (Ctrl+D to finish)")
+func getPrompt() string {
+	fmt.Println("Ask the agent something (press Enter twice to finish)")
 	fmt.Print("> ")
 
-	bytes, err := io.ReadAll(os.Stdin)
+	scanner := bufio.NewScanner(os.Stdin)
+	bld := strings.Builder{}
 
-	if err != nil {
-		return "", fmt.Errorf("Couldn't read user prompt: %w", err)
+	for scanner.Scan() {
+		text := scanner.Text()
+
+		if strings.TrimSpace(text) == "" {
+			break
+		}
+
+		bld.WriteString(text)
 	}
 
-	return string(bytes), nil
+	fmt.Println("Thinking...")
+	return bld.String()
 }
 
 func main() {
@@ -53,11 +62,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	initialPrompt, err := getPrompt()
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	initialPrompt := getPrompt()
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
