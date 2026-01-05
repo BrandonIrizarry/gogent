@@ -156,10 +156,14 @@ func handleFunCall(msgBuf *msgbuf.MsgBuf, funCall *genai.FunctionCall) {
 			"result": fileContents,
 		})
 	default:
-		funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
-			"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
-		})
+		funCallResponsePart = responseError(fmt.Sprintf("Unknown function: %s", funCall.Name))
 	}
 
 	msgBuf.AddToolPart(funCallResponsePart)
+}
+
+func responseError(funCallName, message string) *genai.Part {
+	return genai.NewPartFromFunctionResponse(funCallName, map[string]any{
+		"error": message,
+	})
 }
