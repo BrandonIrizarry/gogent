@@ -42,6 +42,10 @@ func getPrompt() (string, bool) {
 			break
 		}
 
+		// Write an extra space, to make sure that words
+		// across newline boundaries don't run on to each
+		// other.
+		bld.WriteString(" ")
 		bld.WriteString(text)
 	}
 
