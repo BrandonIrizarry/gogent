@@ -27,8 +27,9 @@ reasons, the tool dispatch code will handle that.
 
 `
 
-func getPrompt() string {
-	fmt.Println("Ask the agent something (press Enter twice to finish)")
+func getPrompt() (string, bool) {
+	fmt.Println("Ask the agent something (press Enter twice to submit your prompt)")
+	fmt.Println("Submit a blank prompt to exit the agent REPL")
 	fmt.Print("> ")
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -44,8 +45,14 @@ func getPrompt() string {
 		bld.WriteString(text)
 	}
 
+	// Nothing was written, meaning we must signal to our caller
+	// to not invoke the agent REPL.
+	if bld.Len() == 0 {
+		return "", true
+	}
+
 	fmt.Println("Thinking...")
-	return bld.String()
+	return bld.String(), false
 }
 
 func main() {
@@ -62,7 +69,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	initialPrompt := getPrompt()
+	initialPrompt, quit := getPrompt()
+
+	if quit {
+		os.Exit(0)
+	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
