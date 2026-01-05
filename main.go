@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/joho/godotenv"
 	"google.golang.org/genai"
@@ -82,7 +83,7 @@ func main() {
 	}
 
 	tools := []*genai.Tool{
-		{FunctionDeclarations: []*genai.FunctionDeclaration{&getFileContent}},
+		{FunctionDeclarations: functions.FunctionDeclarations()},
 	}
 
 	msgBuf := msgbuf.NewMsgBuf()
