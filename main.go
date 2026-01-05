@@ -95,11 +95,12 @@ func main() {
 	// The REPL.
 	for {
 		initialPrompt, quit := getPrompt()
-		msgBuf.AddText(initialPrompt)
 
 		if quit {
 			os.Exit(0)
 		}
+
+		msgBuf.AddText(initialPrompt)
 
 		for range pargs.numIterations {
 			response, err := client.Models.GenerateContent(
