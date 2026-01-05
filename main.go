@@ -57,8 +57,6 @@ func main() {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	// FIXME: 20 is hardcoded as the number of times to attempt
-	// the function-call loop.
 	for range pargs.numIterations {
 		response, err := client.Models.GenerateContent(
 			ctx,
