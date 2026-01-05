@@ -97,6 +97,7 @@ func main() {
 		initialPrompt, quit := getPrompt()
 
 		if quit {
+			fmt.Println("Bye, come again soon!")
 			os.Exit(0)
 		}
 
