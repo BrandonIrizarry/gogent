@@ -32,6 +32,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	pargs, err := newProgramArguments()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
 
@@ -44,7 +50,7 @@ func main() {
 	}
 
 	msgBuf := msgbuf.NewMsgBuf()
-	msgBuf.AddText("Describe the contents of main.go in this same directory")
+	msgBuf.AddText(pargs.initialPrompt)
 
 	contentConfig := genai.GenerateContentConfig{
 		Tools:             tools,
@@ -53,7 +59,7 @@ func main() {
 
 	// FIXME: 20 is hardcoded as the number of times to attempt
 	// the function-call loop.
-	for range 20 {
+	for range pargs.numIterations {
 		response, err := client.Models.GenerateContent(
 			ctx,
 			"gemini-2.5-flash",
