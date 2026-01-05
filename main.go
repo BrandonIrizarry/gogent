@@ -73,12 +73,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	initialPrompt, quit := getPrompt()
-
-	if quit {
-		os.Exit(0)
-	}
-
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
 
@@ -91,67 +85,76 @@ func main() {
 	}
 
 	msgBuf := msgbuf.NewMsgBuf()
-	msgBuf.AddText(initialPrompt)
 
 	contentConfig := genai.GenerateContentConfig{
 		Tools:             tools,
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	for range pargs.numIterations {
-		response, err := client.Models.GenerateContent(
-			ctx,
-			"gemini-2.5-flash",
-			msgBuf.Messages,
-			&contentConfig,
-		)
+	// The REPL.
+	for {
+		initialPrompt, quit := getPrompt()
+		msgBuf.AddText(initialPrompt)
 
-		if err != nil {
-			log.Fatal(err)
+		if quit {
+			os.Exit(0)
 		}
 
-		// Add the candidates to the message buffer. This
-		// conforms both to the Gemini documentation, as well
-		// as the Boot.dev AI Agent project.
-		for _, candidate := range response.Candidates {
-			msgBuf.AddMessage(candidate.Content)
-		}
+		for range pargs.numIterations {
+			response, err := client.Models.GenerateContent(
+				ctx,
+				"gemini-2.5-flash",
+				msgBuf.Messages,
+				&contentConfig,
+			)
 
-		// Check if the LLM has proposed any function calls to
-		// act upon.
-		funCalls := response.FunctionCalls()
-
-		// The LLM is ready to give a textual response.
-		if len(funCalls) == 0 {
-			fmt.Println(response.Text())
-			break
-		}
-
-		for _, funCall := range funCalls {
-			var funCallResponsePart *genai.Part
-
-			switch funCall.Name {
-			case "getFileContent":
-				// Read the contents of the given file.
-				path := funCall.Args["filepath"].(string)
-				dat, err := os.ReadFile(path)
-
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				fileContents := string(dat)
-
-				funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
-					"result": fileContents,
-				})
-			default:
-				funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
-					"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
-				})
+			if err != nil {
+				log.Fatal(err)
 			}
 
-			msgBuf.AddToolPart(funCallResponsePart)
+			// Add the candidates to the message buffer. This
+			// conforms both to the Gemini documentation, as well
+			// as the Boot.dev AI Agent project.
+			for _, candidate := range response.Candidates {
+				msgBuf.AddMessage(candidate.Content)
+			}
+
+			// Check if the LLM has proposed any function calls to
+			// act upon.
+			funCalls := response.FunctionCalls()
+
+			// The LLM is ready to give a textual response.
+			if len(funCalls) == 0 {
+				fmt.Println(response.Text())
+				break
+			}
+
+			for _, funCall := range funCalls {
+				var funCallResponsePart *genai.Part
+
+				switch funCall.Name {
+				case "getFileContent":
+					// Read the contents of the given file.
+					path := funCall.Args["filepath"].(string)
+					dat, err := os.ReadFile(path)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					fileContents := string(dat)
+
+					funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
+						"result": fileContents,
+					})
+				default:
+					funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
+						"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
+					})
+				}
+
+				msgBuf.AddToolPart(funCallResponsePart)
+			}
 		}
 	}
 }
