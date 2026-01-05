@@ -131,15 +131,14 @@ func main() {
 			}
 
 			for _, funCall := range funCalls {
-				handleFunCall(&msgBuf, funCall)
+				funCallResponsePart := handleFunCall(funCall)
+				msgBuf.AddToolPart(funCallResponsePart)
 			}
 		}
 	}
 }
 
-func handleFunCall(msgBuf *msgbuf.MsgBuf, funCall *genai.FunctionCall) {
-	var funCallResponsePart *genai.Part
-
+func handleFunCall(funCall *genai.FunctionCall) *genai.Part {
 	switch funCall.Name {
 	case "getFileContent":
 		// Read the contents of the given file.
@@ -147,19 +146,17 @@ func handleFunCall(msgBuf *msgbuf.MsgBuf, funCall *genai.FunctionCall) {
 		dat, err := os.ReadFile(path)
 
 		if err != nil {
-			log.Fatal(err)
+			return responseError(funCall.Name, err.Error())
 		}
 
 		fileContents := string(dat)
 
-		funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
+		return genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
 			"result": fileContents,
 		})
 	default:
-		funCallResponsePart = responseError(fmt.Sprintf("Unknown function: %s", funCall.Name))
+		return responseError(funCall.Name, fmt.Sprintf("Unknown function: %s", funCall.Name))
 	}
-
-	msgBuf.AddToolPart(funCallResponsePart)
 }
 
 func responseError(funCallName, message string) *genai.Part {
