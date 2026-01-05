@@ -21,6 +21,7 @@ When a user asks a question or makes a request, make a function call
 plan. You can perform the following operations:
 
 - Read file contents
+- List directory contents
 
 All paths you provide are relative to some working directory. You must
 not specify the working directory in your function calls; for security

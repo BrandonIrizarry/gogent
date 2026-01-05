@@ -29,6 +29,24 @@ var declarations = map[string]functionDeclarationConfig{
 
 		function: getFileContent,
 	},
+
+	"listDirectory": {
+		declaration: genai.FunctionDeclaration{
+			Name:        "listDirectory",
+			Description: "List names of files in a directory, along with their sizes, and whether they're a directory.",
+			Parameters: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"dir": {
+						Type:        genai.TypeString,
+						Description: "Relative path to directory",
+					},
+				},
+			},
+		},
+
+		function: listDirectory,
+	},
 }
 
 func FunctionDeclarations() []*genai.FunctionDeclaration {
