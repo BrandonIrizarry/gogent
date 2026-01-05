@@ -131,31 +131,35 @@ func main() {
 			}
 
 			for _, funCall := range funCalls {
-				var funCallResponsePart *genai.Part
-
-				switch funCall.Name {
-				case "getFileContent":
-					// Read the contents of the given file.
-					path := funCall.Args["filepath"].(string)
-					dat, err := os.ReadFile(path)
-
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					fileContents := string(dat)
-
-					funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
-						"result": fileContents,
-					})
-				default:
-					funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
-						"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
-					})
-				}
-
-				msgBuf.AddToolPart(funCallResponsePart)
+				handleFunCall(&msgBuf, funCall)
 			}
 		}
 	}
+}
+
+func handleFunCall(msgBuf *msgbuf.MsgBuf, funCall *genai.FunctionCall) {
+	var funCallResponsePart *genai.Part
+
+	switch funCall.Name {
+	case "getFileContent":
+		// Read the contents of the given file.
+		path := funCall.Args["filepath"].(string)
+		dat, err := os.ReadFile(path)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fileContents := string(dat)
+
+		funCallResponsePart = genai.NewPartFromFunctionResponse("getFileContent", map[string]any{
+			"result": fileContents,
+		})
+	default:
+		funCallResponsePart = genai.NewPartFromFunctionResponse(funCall.Name, map[string]any{
+			"error": fmt.Sprintf("Unknown function: %s", funCall.Name),
+		})
+	}
+
+	msgBuf.AddToolPart(funCallResponsePart)
 }
