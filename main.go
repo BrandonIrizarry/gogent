@@ -36,7 +36,7 @@ func getPrompt() (string, bool) {
 	fmt.Print("> ")
 
 	scanner := bufio.NewScanner(os.Stdin)
-	bld := strings.Builder{}
+	var bld strings.Builder
 
 	for scanner.Scan() {
 		text := scanner.Text()
