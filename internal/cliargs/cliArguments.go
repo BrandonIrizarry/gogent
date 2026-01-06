@@ -1,16 +1,48 @@
 package cliargs
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type CLIArguments struct {
 	NumIterations int
 	WorkingDir    string
 	MaxFilesize   int
+}
+
+var ErrBadDefaultDir = errors.New("user didn't accept -dir default of current working directory")
+var ErrGoodDefaultDir = errors.New("user accepted -dir default of current working directory")
+
+func confirmUseCurrentDirectory() bool {
+	// Warn the user that the current directory will be used if
+	// that setting is detected.
+	fmt.Println("No -dir argument was specified, so I'll default to the current directory.")
+
+	for {
+		fmt.Print("Is this OK? [y/N] ")
+
+		var confirm string
+		fmt.Scanln(&confirm)
+
+		confirm = strings.ToLower(confirm)
+
+		switch {
+		case len(confirm) == 0 || confirm == "n":
+			return false
+
+		case confirm == "y":
+			return true
+
+		default:
+			fmt.Println("Please answer y/Y or n/N.")
+			continue
+		}
+	}
 }
 
 func NewCLIArguments() (CLIArguments, error) {
@@ -22,6 +54,13 @@ func NewCLIArguments() (CLIArguments, error) {
 	flag.StringVar(&wdir, "dir", ".", "The top-level project directory (absolute path, else defaults to current directory)")
 
 	flag.Parse()
+
+	// Check if the default argument for -dir is acceptable.
+	if wdir == "." {
+		if ok := confirmUseCurrentDirectory(); !ok {
+			return CLIArguments{}, ErrBadDefaultDir
+		}
+	}
 
 	// Make sure we're using an absolute path, in case a relative one was given.
 	wdir, err := filepath.Abs(wdir)
