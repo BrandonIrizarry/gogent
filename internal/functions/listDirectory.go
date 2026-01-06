@@ -5,33 +5,44 @@ import (
 	"os"
 	"strings"
 
+	"github.com/BrandonIrizarry/gogent/internal/cliargs"
 	"google.golang.org/genai"
 )
 
-func listDirectory(args map[string]any) *genai.Part {
-	dir := args["dir"].(string)
+type listDirectoryType struct{}
 
-	files, err := os.ReadDir(dir)
+var listDirectory listDirectoryType
 
-	if err != nil {
-		return ResponseError("listDirectory", err.Error())
-	}
+func (fnobj listDirectoryType) Name() string {
+	return "listDirectory"
+}
 
-	bld := strings.Builder{}
+func (fnobj listDirectoryType) Function() functionType {
+	return func(args map[string]any, cliArgs cliargs.CLIArguments) *genai.Part {
+		dir := args["dir"].(string)
 
-	for _, file := range files {
-		info, err := file.Info()
+		files, err := os.ReadDir(dir)
 
 		if err != nil {
-			return ResponseError("listDirectory", err.Error())
+			return ResponseError(fnobj.Name(), err.Error())
 		}
 
-		snippet := fmt.Sprintf("- %s: size=%d bytes, isDir: %v\n", info.Name(), info.Size(), info.IsDir())
+		bld := strings.Builder{}
 
-		if _, err := bld.WriteString(snippet); err != nil {
-			return ResponseError("listDirectory", err.Error())
+		for _, file := range files {
+			info, err := file.Info()
+
+			if err != nil {
+				return ResponseError(fnobj.Name(), err.Error())
+			}
+
+			snippet := fmt.Sprintf("- %s: size=%d bytes, isDir: %v\n", info.Name(), info.Size(), info.IsDir())
+
+			if _, err := bld.WriteString(snippet); err != nil {
+				return ResponseError(fnobj.Name(), err.Error())
+			}
 		}
+
+		return responseOK(fnobj.Name(), bld.String())
 	}
-
-	return responseOK("listDirectory", bld.String())
 }

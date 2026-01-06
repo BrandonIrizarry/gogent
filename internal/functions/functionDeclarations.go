@@ -8,7 +8,7 @@ import (
 
 type functionDeclarationConfig struct {
 	declaration genai.FunctionDeclaration
-	function    func(map[string]any) *genai.Part
+	fnObj       functionObject
 }
 
 var declarations = map[string]functionDeclarationConfig{
@@ -27,7 +27,7 @@ var declarations = map[string]functionDeclarationConfig{
 			},
 		},
 
-		function: getFileContent,
+		fnObj: getFileContent,
 	},
 
 	"listDirectory": {
@@ -45,7 +45,7 @@ var declarations = map[string]functionDeclarationConfig{
 			},
 		},
 
-		function: listDirectory,
+		fnObj: listDirectory,
 	},
 }
 
@@ -59,12 +59,12 @@ func FunctionDeclarations() []*genai.FunctionDeclaration {
 	return buf
 }
 
-func Function(name string) (func(map[string]any) *genai.Part, error) {
+func FunctionObject(name string) (functionObject, error) {
 	cfg, ok := declarations[name]
 
 	if !ok {
 		return nil, fmt.Errorf("Unknown function: %s", name)
 	}
 
-	return cfg.function, nil
+	return cfg.fnObj, nil
 }

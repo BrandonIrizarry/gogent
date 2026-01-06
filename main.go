@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/BrandonIrizarry/gogent/internal/cliargs"
 	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/joho/godotenv"
@@ -69,8 +70,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// For now, only get 'numIterations' from the user.
-	pargs, err := newProgramArguments()
+	// Current args: numIterations, workingDir
+	cliArgs, err := cliargs.NewCLIArguments()
 
 	if err != nil {
 		log.Fatal(err)
@@ -105,7 +106,7 @@ func main() {
 
 		msgBuf.AddText(initialPrompt)
 
-		for range pargs.numIterations {
+		for range cliArgs.NumIterations {
 			response, err := client.Models.GenerateContent(
 				ctx,
 				"gemini-2.5-flash",
@@ -135,19 +136,21 @@ func main() {
 			}
 
 			for _, funCall := range funCalls {
-				funCallResponsePart := handleFunCall(funCall)
+				funCallResponsePart := handleFunCall(funCall, cliArgs)
 				msgBuf.AddToolPart(funCallResponsePart)
 			}
 		}
 	}
 }
 
-func handleFunCall(funCall *genai.FunctionCall) *genai.Part {
-	fn, err := functions.Function(funCall.Name)
+func handleFunCall(funCall *genai.FunctionCall, cliArgs cliargs.CLIArguments) *genai.Part {
+	fnObj, err := functions.FunctionObject(funCall.Name)
 
 	if err != nil {
 		return functions.ResponseError(funCall.Name, fmt.Sprintf("Unknown function: %s", funCall.Name))
 	}
 
-	return fn(funCall.Args)
+	fn := fnObj.Function()
+
+	return fn(funCall.Args, cliArgs)
 }
