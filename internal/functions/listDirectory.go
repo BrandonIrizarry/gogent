@@ -19,7 +19,7 @@ func (fnobj listDirectoryType) Name() string {
 
 func (fnobj listDirectoryType) Function() functionType {
 	return func(args map[string]any, cliArgs cliargs.CLIArguments) *genai.Part {
-		dir, err := normalizePath(args["dir"], cliArgs.ToplevelDir)
+		dir, err := normalizePath(args["dir"], cliArgs.WorkingDir)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())
