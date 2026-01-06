@@ -73,6 +73,37 @@ func main() {
 	// Current args: numIterations, workingDir
 	cliArgs, err := cliargs.NewCLIArguments()
 
+	// Warn the user that the current directory will be used if
+	// that setting is detected.
+	fmt.Println("No -dir argument was specified, so I'll default to the current directory.")
+
+	for {
+		fmt.Print("Is this OK? [y/N] ")
+
+		var confirm string
+		fmt.Scanln(&confirm)
+
+		confirm = strings.ToLower(confirm)
+
+		if len(confirm) == 0 {
+			fmt.Println("OK, rerun with -dir $MY_PATH")
+			os.Exit(0)
+		}
+
+		if confirm == "y" || confirm == "n" {
+			if confirm == "n" {
+				fmt.Println("OK, rerun with -dir $MY_PATH")
+				os.Exit(0)
+			} else {
+				fmt.Printf("OK, setting working directory to '%s'\n", cliArgs.WorkingDir)
+				break
+			}
+		} else {
+			fmt.Println("Please answer y/Y or n/N.")
+			continue
+		}
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
