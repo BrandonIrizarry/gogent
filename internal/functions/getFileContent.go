@@ -21,7 +21,7 @@ func (fnobj getFileContentType) Name() string {
 
 func (fnobj getFileContentType) Function() functionType {
 	return func(args map[string]any, cliArgs cliargs.CLIArguments) *genai.Part {
-		absPath, err := normalizePath(args["filepath"])
+		absPath, err := normalizePath(args["filepath"], cliArgs.ToplevelDir)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())

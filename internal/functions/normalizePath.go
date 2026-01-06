@@ -5,18 +5,14 @@ import (
 	"path/filepath"
 )
 
-func normalizePath(arg any) (string, error) {
+func normalizePath(arg any, workingDir string) (string, error) {
 	path, ok := arg.(string)
 
 	if !ok {
 		return "", fmt.Errorf("Couldn't normalize '%v'", arg)
 	}
 
-	absPath, err := filepath.Abs(path)
-
-	if err != nil {
-		return "", fmt.Errorf("Couldn't get abspath: %w", err)
-	}
+	absPath := filepath.Join(workingDir, path)
 
 	return absPath, nil
 }
