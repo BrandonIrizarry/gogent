@@ -13,9 +13,10 @@ import (
 type functionType func(map[string]any, cliargs.CLIArguments) *genai.Part
 
 // functionObject groups all our LLM functions under a common
-// interface. Currently, the purpose of such an interface is to be
+// interface. Originally, the purpose of such an interface is to be
 // able to refer to a function's name without the boilerplate of
-// hard-coding it inside each individual function definition.
+// hard-coding it inside each individual function definition. However,
+// more uses may arise as needed.
 type functionObject interface {
 	Name() string
 	Function() functionType
