@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"log"
 	"os"
 
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
@@ -27,13 +28,32 @@ func (fnobj getFileContentType) Function() functionType {
 			return ResponseError(fnobj.Name(), err.Error())
 		}
 
-		dat, err := os.ReadFile(absPath)
+		fileBuf := make([]byte, cliArgs.MaxFilesize)
+
+		file, err := os.Open(absPath)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())
 		}
 
-		fileContents := string(dat)
+		defer file.Close()
+
+		numBytes, err := file.Read(fileBuf)
+
+		if err != nil {
+			return ResponseError(fnobj.Name(), err.Error())
+		}
+
+		switch numBytes {
+		case 0:
+			log.Printf("Warning: read zero bytes from %s", absPath)
+		case cliArgs.MaxFilesize:
+			log.Printf("Warning: read maximum number of bytes (%d) from %s; possible truncation", numBytes, absPath)
+		default:
+			log.Printf("OK: read %d bytes from %s", numBytes, absPath)
+		}
+
+		fileContents := string(fileBuf)
 
 		return responseOK(fnobj.Name(), fileContents)
 	}

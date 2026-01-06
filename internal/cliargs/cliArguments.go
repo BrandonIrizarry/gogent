@@ -10,12 +10,14 @@ import (
 type CLIArguments struct {
 	NumIterations int
 	ToplevelDir   string
+	MaxFilesize   int
 }
 
 func NewCLIArguments() (CLIArguments, error) {
 	var cliArgs CLIArguments
 
-	flag.IntVar(&cliArgs.NumIterations, "num", 20, "The number of times the function call loop should execute")
+	flag.IntVar(&cliArgs.NumIterations, "num", 20, "The number of times the function call loop should execute (defaults to 20)")
+	flag.IntVar(&cliArgs.MaxFilesize, "maxsize", 10000, "The size limit for file-reading operations (defaults to 10KB)")
 	flag.StringVar(&cliArgs.ToplevelDir, "dir", "", "The top-level project directory")
 
 	flag.Parse()
