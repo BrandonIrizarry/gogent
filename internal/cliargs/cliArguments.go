@@ -51,15 +51,23 @@ func NewCLIArguments() (CLIArguments, error) {
 
 	flag.IntVar(&cliArgs.NumIterations, "num", 20, "The number of times the function call loop should execute (defaults to 20)")
 	flag.IntVar(&cliArgs.MaxFilesize, "maxsize", 10000, "The size limit for file-reading operations (defaults to 10KB)")
-	flag.StringVar(&wdir, "dir", ".", "The top-level project directory (absolute path, else defaults to current directory)")
+
+	// Use the empty string as the default for -dir to later vet
+	// whether using the current directory is acceptable. This is
+	// to differentiate from the case where -dir is explicitly
+	// provided as the current directory, in which case nothing
+	// need be flagged to the user.
+	flag.StringVar(&wdir, "dir", "", "The top-level project directory (absolute path, else defaults to current directory)")
 
 	flag.Parse()
 
 	// Check if the default argument for -dir is acceptable.
-	if wdir == "." {
+	if wdir == "" {
 		if ok := confirmUseCurrentDirectory(); !ok {
 			return CLIArguments{}, ErrBadDefaultDir
 		}
+
+		wdir = "."
 	}
 
 	// Make sure we're using an absolute path, in case a relative one was given.
