@@ -18,6 +18,13 @@ type functionType func(map[string]any, cliargs.CLIArguments) *genai.Part
 // hard-coding it inside each individual function definition. However,
 // more uses may arise as needed.
 type functionObject interface {
+	// Returns the name of the function doing the dirty work. Originally,
+	// this used to be the name of an actual Go function.
 	Name() string
+
+	// Returns the function that does the dirty work. The client
+	// using an implementor of functionObject should fetch this
+	// return value and then invoke it with the necessary
+	// arguments.
 	Function() functionType
 }
