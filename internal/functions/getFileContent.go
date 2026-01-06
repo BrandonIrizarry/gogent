@@ -22,7 +22,7 @@ func (fnobj getFileContentType) Name() string {
 
 func (fnobj getFileContentType) Function() functionType {
 	return func(args map[string]any, cliArgs cliargs.CLIArguments) *genai.Part {
-		absPath, err := normalizePath(args["filepath"], cliArgs.WorkingDir)
+		path, err := normalizePath(args["filepath"], cliArgs.WorkingDir)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())
@@ -30,7 +30,7 @@ func (fnobj getFileContentType) Function() functionType {
 
 		fileBuf := make([]byte, cliArgs.MaxFilesize)
 
-		file, err := os.Open(absPath)
+		file, err := os.Open(path)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())
@@ -46,11 +46,11 @@ func (fnobj getFileContentType) Function() functionType {
 
 		switch numBytes {
 		case 0:
-			log.Printf("Warning: read zero bytes from %s", absPath)
+			log.Printf("Warning: read zero bytes from %s", path)
 		case cliArgs.MaxFilesize:
-			log.Printf("Warning: read maximum number of bytes (%d) from %s; possible truncation", numBytes, absPath)
+			log.Printf("Warning: read maximum number of bytes (%d) from %s; possible truncation", numBytes, path)
 		default:
-			log.Printf("OK: read %d bytes from %s", numBytes, absPath)
+			log.Printf("OK: read %d bytes from %s", numBytes, path)
 		}
 
 		fileContents := string(fileBuf)
