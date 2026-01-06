@@ -2,7 +2,6 @@ package functions
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
 	"google.golang.org/genai"
@@ -22,19 +21,10 @@ func (fnobj getFileContentType) Name() string {
 
 func (fnobj getFileContentType) Function() functionType {
 	return func(args map[string]any, cliArgs cliargs.CLIArguments) *genai.Part {
-		// Let's make sure we don't accidentally use 'path' later on:
-		// so declare this outside, then handle conversion from the
-		// relative path inside a scoped block.
-		var absPath string
+		absPath, err := normalizePath(args["filepath"])
 
-		{
-			var err error
-			path := args["filepath"].(string)
-			absPath, err = filepath.Abs(path)
-
-			if err != nil {
-				return ResponseError(fnobj.Name(), err.Error())
-			}
+		if err != nil {
+			return ResponseError(fnobj.Name(), err.Error())
 		}
 
 		dat, err := os.ReadFile(absPath)
