@@ -71,7 +71,6 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Current args: numIterations, workingDir
 	cliArgs, err := cliargs.NewCLIArguments()
 
 	if err != nil {
