@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
 	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
@@ -72,26 +72,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	yamlConfig, err := yamlconfig.NewYAMLConfig("gogent.yaml")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("%#v", yamlConfig)
-
 	cliArgs, err := cliargs.NewCLIArguments()
-
 	if err != nil {
-		if errors.Is(err, cliargs.ErrBadDefaultDir) {
-			fmt.Println("OK, rerun with -dir $MY_PATH (can be relative)")
-			os.Exit(0)
-		}
-
 		log.Fatal(err)
 	}
 
-	fmt.Printf("OK, setting working directory to %s\n", cliArgs.WorkingDir)
+	yamlCfg, err := yamlconfig.NewYAMLConfig("gogent.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	baseCfg := baseconfig.BaseConfig{cliArgs, yamlCfg}
+
+	if baseCfg.Verbose {
+		fmt.Println()
+		fmt.Println("Current settings:")
+		fmt.Printf("Working directory: %s\n", baseCfg.WorkingDir)
+		fmt.Printf("Max iterations: %d\n", baseCfg.MaxIterations)
+		fmt.Printf("Max filesize: %d\n", baseCfg.MaxFilesize)
+	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
@@ -122,7 +121,7 @@ func main() {
 
 		msgBuf.AddText(initialPrompt)
 
-		for i := 0; i < cliArgs.NumIterations; i++ {
+		for i := 0; i < baseCfg.MaxIterations; i++ {
 			if cliArgs.Verbose {
 				fmt.Println()
 				log.Printf("New iteration: %d", i+1)
@@ -172,14 +171,14 @@ func main() {
 					log.Printf("Function call args: %#v", funCall.Args)
 				}
 
-				funCallResponsePart := handleFunCall(funCall, cliArgs)
+				funCallResponsePart := handleFunCall(funCall, baseCfg)
 				msgBuf.AddToolPart(funCallResponsePart)
 			}
 		}
 	}
 }
 
-func handleFunCall(funCall *genai.FunctionCall, cliArgs cliargs.CLIArguments) *genai.Part {
+func handleFunCall(funCall *genai.FunctionCall, baseCfg baseconfig.BaseConfig) *genai.Part {
 	fnObj, err := functions.FunctionObject(funCall.Name)
 
 	if err != nil {
@@ -188,5 +187,5 @@ func handleFunCall(funCall *genai.FunctionCall, cliArgs cliargs.CLIArguments) *g
 
 	fn := fnObj.Function()
 
-	return fn(funCall.Args, cliArgs)
+	return fn(funCall.Args, baseCfg)
 }

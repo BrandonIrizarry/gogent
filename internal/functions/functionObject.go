@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/BrandonIrizarry/gogent/internal/cliargs"
+	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"google.golang.org/genai"
 )
 
@@ -10,7 +10,7 @@ import (
 // while the second is user configuation. A Part object is returned
 // for consumption by the LLM. If an error is encountered, a Part
 // encapsulating the error is returned.
-type functionType func(map[string]any, cliargs.CLIArguments) *genai.Part
+type functionType func(map[string]any, baseconfig.BaseConfig) *genai.Part
 
 // functionObject groups all our LLM functions under a common
 // interface. Originally, the purpose of such an interface is to be
