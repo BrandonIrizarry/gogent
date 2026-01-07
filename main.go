@@ -113,7 +113,12 @@ func main() {
 
 		msgBuf.AddText(initialPrompt)
 
-		for range cliArgs.NumIterations {
+		for i := 0; i < cliArgs.NumIterations; i++ {
+			if cliArgs.Verbose {
+				fmt.Println()
+				log.Printf("New iteration: %d", i+1)
+			}
+
 			response, err := client.Models.GenerateContent(
 				ctx,
 				"gemini-2.5-flash",
@@ -123,6 +128,11 @@ func main() {
 
 			if err != nil {
 				log.Fatal(err)
+			}
+
+			if cliArgs.Verbose {
+				log.Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
+				log.Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
 			}
 
 			// Add the candidates to the message buffer. This
@@ -138,11 +148,21 @@ func main() {
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
+				if cliArgs.Verbose {
+					log.Println("No more function calls; printing text response")
+					fmt.Println()
+				}
+
 				fmt.Println(response.Text())
 				break
 			}
 
 			for _, funCall := range funCalls {
+				if cliArgs.Verbose {
+					log.Printf("Function call name: %s", funCall.Name)
+					log.Printf("Function call args: %#v", funCall.Args)
+				}
+
 				funCallResponsePart := handleFunCall(funCall, cliArgs)
 				msgBuf.AddToolPart(funCallResponsePart)
 			}

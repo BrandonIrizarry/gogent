@@ -13,6 +13,7 @@ type CLIArguments struct {
 	NumIterations int
 	WorkingDir    string
 	MaxFilesize   int
+	Verbose       bool
 }
 
 var ErrBadDefaultDir = errors.New("user didn't accept -dir default of current working directory")
@@ -50,6 +51,7 @@ func NewCLIArguments() (CLIArguments, error) {
 
 	flag.IntVar(&cliArgs.NumIterations, "num", 20, "The number of times the function call loop should execute (defaults to 20)")
 	flag.IntVar(&cliArgs.MaxFilesize, "maxsize", 200_000, "The size limit for file-reading operations (defaults to 200KB)")
+	flag.BoolVar(&cliArgs.Verbose, "verbose", false, "Whether to print usage metadata")
 
 	// Use the empty string as the default for -dir to later vet
 	// whether using the current directory is acceptable. This is
