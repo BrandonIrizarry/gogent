@@ -12,8 +12,10 @@ import (
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
 	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
+	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
 	"google.golang.org/genai"
+	"gopkg.in/yaml.v3"
 )
 
 var systemInstruction = `
@@ -68,8 +70,22 @@ func main() {
 	// Load our environment variables (including the Gemini API
 	// key.)
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal(err)
 	}
+
+	// Read in a YAML file.
+	yamlData, err := os.ReadFile("gogent.yaml")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var yamlCfg yamlconfig.YAMLConfig
+	if err := yaml.Unmarshal(yamlData, &yamlCfg); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("%#v", yamlCfg)
 
 	cliArgs, err := cliargs.NewCLIArguments()
 
