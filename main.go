@@ -74,16 +74,15 @@ func main() {
 	cliArgs, err := cliargs.NewCLIArguments()
 
 	if err != nil {
-		switch {
-		case errors.Is(err, cliargs.ErrBadDefaultDir):
+		if errors.Is(err, cliargs.ErrBadDefaultDir) {
 			fmt.Println("OK, rerun with -dir $MY_PATH (can be relative)")
 			os.Exit(0)
-		case errors.Is(err, cliargs.ErrGoodDefaultDir):
-			fmt.Printf("OK, setting working directory to '%s'\n", cliArgs.WorkingDir)
-		default:
-			log.Fatal(err)
 		}
+
+		log.Fatal(err)
 	}
+
+	fmt.Printf("OK, setting working directory to %s\n", cliArgs.WorkingDir)
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)

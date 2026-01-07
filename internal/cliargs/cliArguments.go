@@ -16,7 +16,6 @@ type CLIArguments struct {
 }
 
 var ErrBadDefaultDir = errors.New("user didn't accept -dir default of current working directory")
-var ErrGoodDefaultDir = errors.New("user accepted -dir default of current working directory")
 
 func confirmUseCurrentDirectory() bool {
 	// Warn the user that the current directory will be used if
