@@ -49,7 +49,7 @@ func NewCLIArguments() (CLIArguments, error) {
 	var wdir string
 
 	flag.IntVar(&cliArgs.NumIterations, "num", 20, "The number of times the function call loop should execute (defaults to 20)")
-	flag.IntVar(&cliArgs.MaxFilesize, "maxsize", 10000, "The size limit for file-reading operations (defaults to 10KB)")
+	flag.IntVar(&cliArgs.MaxFilesize, "maxsize", 200_000, "The size limit for file-reading operations (defaults to 200KB)")
 
 	// Use the empty string as the default for -dir to later vet
 	// whether using the current directory is acceptable. This is
