@@ -15,7 +15,6 @@ import (
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
 	"google.golang.org/genai"
-	"gopkg.in/yaml.v3"
 )
 
 var systemInstruction = `
@@ -73,19 +72,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Read in a YAML file.
-	yamlData, err := os.ReadFile("gogent.yaml")
+	yamlConfig, err := yamlconfig.NewYAMLConfig("gogent.yaml")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var yamlCfg yamlconfig.YAMLConfig
-	if err := yaml.Unmarshal(yamlData, &yamlCfg); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("%#v", yamlCfg)
+	log.Printf("%#v", yamlConfig)
 
 	cliArgs, err := cliargs.NewCLIArguments()
 
