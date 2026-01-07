@@ -23,7 +23,7 @@ func confirmUseCurrentDirectory() bool {
 	fmt.Println("No -dir argument was specified, so I'll default to the current directory.")
 
 	for {
-		fmt.Print("Is this OK? [y/N] ")
+		fmt.Print("Is this OK? [Y/n] ")
 
 		var confirm string
 		fmt.Scanln(&confirm)
@@ -31,10 +31,10 @@ func confirmUseCurrentDirectory() bool {
 		confirm = strings.ToLower(confirm)
 
 		switch {
-		case len(confirm) == 0 || confirm == "n":
+		case confirm == "n":
 			return false
 
-		case confirm == "y":
+		case len(confirm) == 0 || confirm == "y":
 			return true
 
 		default:
