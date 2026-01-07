@@ -13,6 +13,7 @@ import (
 	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
+	"github.com/charmbracelet/glamour"
 	"github.com/joho/godotenv"
 	"google.golang.org/genai"
 )
@@ -161,7 +162,14 @@ func main() {
 					fmt.Println()
 				}
 
-				fmt.Println(response.Text())
+				text := response.Text()
+				if out, err := glamour.Render(text, "light"); err != nil {
+					log.Println("Glamour rendering failed, defaulting to plain text")
+					fmt.Println(text)
+				} else {
+					fmt.Println(out)
+				}
+
 				break
 			}
 
