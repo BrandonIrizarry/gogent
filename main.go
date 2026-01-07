@@ -35,7 +35,7 @@ reasons, the tool dispatch code will handle that.
 func getPrompt() (string, bool) {
 	fmt.Println()
 	fmt.Println("Ask the agent something (press Enter twice to submit your prompt)")
-	fmt.Println("Submit a blank prompt to exit the agent REPL")
+	fmt.Println("Submit a blank prompt to exit")
 	fmt.Print("> ")
 
 	scanner := bufio.NewScanner(os.Stdin)
