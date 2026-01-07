@@ -91,6 +91,7 @@ func main() {
 		fmt.Printf("Working directory: %s\n", baseCfg.WorkingDir)
 		fmt.Printf("Max iterations: %d\n", baseCfg.MaxIterations)
 		fmt.Printf("Max filesize: %d\n", baseCfg.MaxFilesize)
+		fmt.Printf("Render style: %s\n", baseCfg.RenderStyle)
 	}
 
 	ctx := context.Background()
@@ -163,7 +164,7 @@ func main() {
 				}
 
 				text := response.Text()
-				if out, err := glamour.Render(text, "light"); err != nil {
+				if out, err := glamour.Render(text, baseCfg.RenderStyle); err != nil {
 					log.Println("Glamour rendering failed, defaulting to plain text")
 					fmt.Println(text)
 				} else {

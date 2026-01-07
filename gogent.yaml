@@ -1,3 +1,4 @@
 max_iterations: 20
 max_filesize: 100000
 working_dir: "."
+render_style: "light"

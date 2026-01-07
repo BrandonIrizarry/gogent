@@ -1,27 +1,23 @@
 package yamlconfig
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 )
 
 type YAMLConfig struct {
-	MaxIterations int    `yaml:"max_iterations"`
-	MaxFilesize   int    `yaml:"max_filesize"`
-	WorkingDir    string `yaml:"working_dir"`
+	MaxIterations int    `yaml:"max_iterations" validate:"required,gte=20,lte=100"`
+	MaxFilesize   int    `yaml:"max_filesize" validate:"gte=1000,lte=200000"`
+	WorkingDir    string `yaml:"working_dir" validate:"required"`
+	RenderStyle   string `yaml:"render_style" validate:"oneof=light dark none"`
 }
-
-const (
-	minMaxIterations = 20
-	minMaxFilesize   = 1000
-
-	// The working directory defaults to gogent's own current
-	// working directory.
-	defaultWorkingDir = "."
-)
 
 // NewYAMLConfig reads filename and returns a populated YAMLConfig
 // struct plus an error. Validation is performed on fields where
@@ -38,17 +34,39 @@ func NewYAMLConfig(filename string) (YAMLConfig, error) {
 		return YAMLConfig{}, err
 	}
 
-	// Use default values in case values are missing or invalid.
-	if cfg.MaxIterations < minMaxIterations {
-		cfg.MaxIterations = minMaxIterations
-	}
+	// Validate the struct.
+	v := validator.New()
 
-	if cfg.MaxFilesize < minMaxFilesize {
-		cfg.MaxFilesize = minMaxFilesize
-	}
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("yaml"), ",", 2)[0]
 
-	if cfg.WorkingDir == "" {
-		cfg.WorkingDir = defaultWorkingDir
+		// skip if tag key says it should be ignored
+		if name == "-" {
+			return ""
+		}
+
+		return name
+	})
+
+	if err := v.Struct(cfg); err != nil {
+		var fieldErr validator.ValidationErrors
+		var bld strings.Builder
+
+		fmt.Fprintf(&bld, "Errors in %s:\n\n", filename)
+
+		if errors.As(err, &fieldErr) {
+			for _, verr := range fieldErr {
+				value := verr.Value()
+				field := verr.Field()
+
+				fmt.Fprintf(&bld, "%s: invalid value: %v \n", field, value)
+			}
+
+			fmt.Fprintf(&bld, "\nSee documentation for more information on argument boundaries, etc.\n\n")
+			return YAMLConfig{}, errors.New(bld.String())
+		}
+
+		return YAMLConfig{}, err
 	}
 
 	// Expand '~' prefix to the user's home directory.
