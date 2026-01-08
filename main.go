@@ -31,6 +31,10 @@ All paths you provide are relative to some working directory. You must
 not specify the working directory in your function calls; for security
 reasons, the tool dispatch code will handle that.
 
+If you don't know what directory the user is referring to in their
+prompt, always ask the user whether they mean the current working
+directory before performing any functions.
+
 `
 
 func getPrompt() (string, bool) {
