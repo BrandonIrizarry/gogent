@@ -94,11 +94,21 @@ func main() {
 		fmt.Printf("Render style: %s\n", baseCfg.RenderStyle)
 	}
 
+	if err := repl(baseCfg); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Bye, come again soon!")
+}
+
+// repl launches a chat REPL with the agent, using the configuration
+// parameters found in baseCfg.
+func repl(baseCfg baseconfig.BaseConfig) (err error) {
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
 
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
 	tools := []*genai.Tool{
@@ -112,24 +122,23 @@ func main() {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	// The REPL.
 	for {
 		initialPrompt, quit := getPrompt()
 
 		if quit {
-			fmt.Println("Bye, come again soon!")
-			os.Exit(0)
+			return
 		}
 
 		msgBuf.AddText(initialPrompt)
 
+		var response *genai.GenerateContentResponse
 		for i := 0; i < baseCfg.MaxIterations; i++ {
-			if cliArgs.Verbose {
+			if baseCfg.Verbose {
 				fmt.Println()
 				log.Printf("New iteration: %d", i+1)
 			}
 
-			response, err := client.Models.GenerateContent(
+			response, err = client.Models.GenerateContent(
 				ctx,
 				"gemini-2.5-flash",
 				msgBuf.Messages,
@@ -137,10 +146,10 @@ func main() {
 			)
 
 			if err != nil {
-				log.Fatal(err)
+				return
 			}
 
-			if cliArgs.Verbose {
+			if baseCfg.Verbose {
 				log.Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
 				log.Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
 			}
@@ -158,7 +167,7 @@ func main() {
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				if cliArgs.Verbose {
+				if baseCfg.Verbose {
 					log.Println("Printing text response:")
 					fmt.Println()
 				}
@@ -175,7 +184,7 @@ func main() {
 			}
 
 			for _, funCall := range funCalls {
-				if cliArgs.Verbose {
+				if baseCfg.Verbose {
 					log.Printf("Function call name: %s", funCall.Name)
 
 					for arg, val := range funCall.Args {
