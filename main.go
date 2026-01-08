@@ -159,7 +159,7 @@ func main() {
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
 				if cliArgs.Verbose {
-					log.Println("No more function calls; printing text response")
+					log.Println("Printing text response:")
 					fmt.Println()
 				}
 
