@@ -71,6 +71,8 @@ func getPrompt() (string, bool) {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	// Load our environment variables (including the Gemini API
 	// key.)
 	if err := godotenv.Load(); err != nil {
