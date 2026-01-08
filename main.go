@@ -83,7 +83,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	baseCfg := baseconfig.BaseConfig{cliArgs, yamlCfg}
+	baseCfg := baseconfig.BaseConfig{CLIArguments: cliArgs, YAMLConfig: yamlCfg}
 
 	if baseCfg.Verbose {
 		fmt.Println()
