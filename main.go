@@ -177,7 +177,11 @@ func main() {
 			for _, funCall := range funCalls {
 				if cliArgs.Verbose {
 					log.Printf("Function call name: %s", funCall.Name)
-					log.Printf("Function call args: %#v", funCall.Args)
+
+					for arg, val := range funCall.Args {
+						log.Printf(" - argument: %s", arg)
+						log.Printf(" - value: %v", val)
+					}
 				}
 
 				funCallResponsePart := handleFunCall(funCall, baseCfg)
