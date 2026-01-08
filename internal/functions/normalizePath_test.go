@@ -13,6 +13,7 @@ func TestNormalizePath(t *testing.T) {
 	}{
 		{".env", "~/repos/gogent/.env"},
 		{".", "~/repos/gogent"},
+		{"internal/functions/normalizePath.go", "~/repos/gogent/internal/functions/normalizePath.go"},
 	}
 
 	for _, tt := range tests {
