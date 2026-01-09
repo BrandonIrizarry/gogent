@@ -17,6 +17,7 @@ type YAMLConfig struct {
 	MaxFilesize   int    `yaml:"max_filesize" validate:"gte=1000,lte=200000"`
 	WorkingDir    string `yaml:"working_dir" validate:"required"`
 	RenderStyle   string `yaml:"render_style" validate:"oneof=light dark none"`
+	Model         string `yaml:"model" validate:"required"`
 }
 
 // NewYAMLConfig reads filename and returns a populated YAMLConfig

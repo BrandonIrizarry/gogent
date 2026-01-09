@@ -155,7 +155,7 @@ func repl(baseCfg baseconfig.BaseConfig) (err error) {
 
 			response, err = client.Models.GenerateContent(
 				ctx,
-				"gemini-2.5-flash",
+				baseCfg.Model,
 				msgBuf.Messages,
 				&contentConfig,
 			)
