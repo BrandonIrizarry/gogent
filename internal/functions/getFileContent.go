@@ -2,7 +2,6 @@ package functions
 
 import (
 	"log"
-	"os"
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"google.golang.org/genai"
@@ -23,38 +22,19 @@ func (fnobj getFileContentType) Name() string {
 func (fnobj getFileContentType) Function() functionType {
 	return func(args map[string]any, baseCfg baseconfig.BaseConfig) *genai.Part {
 		path, err := normalizePath(args["filepath"], baseCfg.WorkingDir)
-
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())
 		}
 
-		fileBuf := make([]byte, baseCfg.MaxFilesize)
-
-		file, err := os.Open(path)
-
+		content, logs, err := fileContent(path, baseCfg.MaxFilesize)
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())
 		}
 
-		defer file.Close()
-
-		numBytes, err := file.Read(fileBuf)
-
-		if err != nil {
-			return ResponseError(fnobj.Name(), err.Error())
+		for _, lg := range logs {
+			log.Println(lg)
 		}
 
-		switch numBytes {
-		case 0:
-			log.Printf("Warning: read zero bytes from %s", path)
-		case baseCfg.MaxFilesize:
-			log.Printf("Warning: read maximum number of bytes (%d) from %s; possible truncation", numBytes, path)
-		default:
-			log.Printf("OK: read %d bytes from %s", numBytes, path)
-		}
-
-		fileContents := string(fileBuf)
-
-		return responseOK(fnobj.Name(), fileContents)
+		return responseOK(fnobj.Name(), content)
 	}
 }

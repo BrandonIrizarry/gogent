@@ -30,6 +30,28 @@ var declarations = map[string]functionDeclarationConfig{
 		fnObj: getFileContent,
 	},
 
+	"getFileContentRecursively": {
+		declaration: genai.FunctionDeclaration{
+			Name:        "getFileContentRecursively",
+			Description: "Read contents of non-blacklisted files whose ancestor is the given directory.",
+			Parameters: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"dir": {
+						Type:        genai.TypeString,
+						Description: "Relative path to directory",
+					},
+					"depth": {
+						Type:        genai.TypeInteger,
+						Description: `How many directories deep to read file contents. The user can specify "no limit" to use an unbounded depth.`,
+					},
+				},
+			},
+		},
+
+		fnObj: getFileContentRecursively,
+	},
+
 	"listDirectory": {
 		declaration: genai.FunctionDeclaration{
 			Name:        "listDirectory",
