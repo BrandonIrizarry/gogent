@@ -59,10 +59,10 @@ func NewYAMLConfig(filename string) (YAMLConfig, error) {
 				value := verr.Value()
 				field := verr.Field()
 
-				fmt.Fprintf(&bld, "%s: invalid value: %v \n", field, value)
+				fmt.Fprintf(&bld, "%s: invalid value: %v\n", field, value)
 			}
 
-			fmt.Fprintf(&bld, "\nSee documentation for more information on argument boundaries, etc.\n\n")
+			fmt.Fprintf(&bld, "See documentation for more information on argument boundaries, etc.\n\n")
 			return YAMLConfig{}, errors.New(bld.String())
 		}
 
