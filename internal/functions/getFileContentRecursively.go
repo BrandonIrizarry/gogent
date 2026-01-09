@@ -136,9 +136,7 @@ func (fnobj getFileContentRecursivelyType) Function() functionType {
 				return ResponseError(fnobj.Name(), err.Error())
 			}
 
-			for _, lg := range logs {
-				log.Println(lg)
-			}
+			log.Println(logs)
 
 			fmt.Fprintf(&bld, "Contents of %s: %s\n\n", path, content)
 		}

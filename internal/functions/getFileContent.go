@@ -31,9 +31,7 @@ func (fnobj getFileContentType) Function() functionType {
 			return ResponseError(fnobj.Name(), err.Error())
 		}
 
-		for _, lg := range logs {
-			log.Println(lg)
-		}
+		log.Println(logs)
 
 		return responseOK(fnobj.Name(), content)
 	}
