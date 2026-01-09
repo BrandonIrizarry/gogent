@@ -69,31 +69,41 @@ func NewYAMLConfig(filename string) (YAMLConfig, error) {
 		return YAMLConfig{}, err
 	}
 
-	// Expand '~' prefix to the user's home directory.
-	if cfg.WorkingDir[0] == '~' {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return YAMLConfig{}, err
-		}
-
-		cfg.WorkingDir = filepath.Join(homeDir, cfg.WorkingDir[1:])
-	}
-
-	// Use the absolute path form of the working directory.
-	cfg.WorkingDir, err = filepath.Abs(cfg.WorkingDir)
+	// Handle specific fields.
+	cfg.WorkingDir, err = fixWorkingDir(cfg.WorkingDir)
 	if err != nil {
 		return YAMLConfig{}, err
-	}
-
-	// Verify that cfg.WorkingDir is a directory.
-	finfo, err := os.Stat(cfg.WorkingDir)
-	if err != nil {
-		return YAMLConfig{}, err
-	}
-
-	if ok := finfo.IsDir(); !ok {
-		return YAMLConfig{}, fmt.Errorf("invalid working directory: %s", cfg.WorkingDir)
 	}
 
 	return cfg, nil
+}
+
+func fixWorkingDir(workingDir string) (string, error) {
+	// Expand '~' prefix to the user's home directory.
+	if workingDir[0] == '~' {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+
+		workingDir = filepath.Join(homeDir, workingDir[1:])
+	}
+
+	// Use the absolute path form of the working directory.
+	workingDir, err := filepath.Abs(workingDir)
+	if err != nil {
+		return "", err
+	}
+
+	// Verify that cfg.WorkingDir is a directory.
+	finfo, err := os.Stat(workingDir)
+	if err != nil {
+		return "", err
+	}
+
+	if ok := finfo.IsDir(); !ok {
+		return "", fmt.Errorf("invalid working directory: %s", workingDir)
+	}
+
+	return workingDir, nil
 }
