@@ -58,8 +58,14 @@ func NewYAMLConfig(filename string) (YAMLConfig, error) {
 			for _, verr := range fieldErr {
 				value := verr.Value()
 				field := verr.Field()
+				vt := fmt.Sprintf("%v", verr.Type())
 
-				fmt.Fprintf(&bld, "%s: invalid value: %v\n", field, value)
+				fmt.Fprintf(&bld, "%s: invalid value: %v", field, value)
+				if vt == "string" {
+					fmt.Fprintf(&bld, "(empty string)\n")
+				} else {
+					fmt.Fprintln(&bld)
+				}
 			}
 
 			fmt.Fprintf(&bld, "See documentation for more information on argument boundaries, etc.\n\n")
