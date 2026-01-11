@@ -19,17 +19,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cliArgs, err := cliargs.NewCLIArguments()
+	baseCfg, err := baseConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	yamlCfg, err := yamlconfig.NewYAMLConfig("gogent.yaml")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	baseCfg := baseconfig.BaseConfig{CLIArguments: cliArgs, YAMLConfig: yamlCfg}
 
 	if baseCfg.Verbose {
 		fmt.Println()
@@ -45,4 +38,18 @@ func main() {
 	}
 
 	fmt.Println("Bye, come again soon!")
+}
+
+func baseConfig() (baseconfig.BaseConfig, error) {
+	cliArgs, err := cliargs.NewCLIArguments()
+	if err != nil {
+		return baseconfig.BaseConfig{}, err
+	}
+
+	yamlCfg, err := yamlconfig.NewYAMLConfig("gogent.yaml")
+	if err != nil {
+		return baseconfig.BaseConfig{}, err
+	}
+
+	return baseconfig.BaseConfig{CLIArguments: cliArgs, YAMLConfig: yamlCfg}, nil
 }
