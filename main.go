@@ -31,6 +31,7 @@ func main() {
 		fmt.Printf("Max iterations: %d\n", baseCfg.MaxIterations)
 		fmt.Printf("Max filesize: %d\n", baseCfg.MaxFilesize)
 		fmt.Printf("Render style: %s\n", baseCfg.RenderStyle)
+		fmt.Printf("Model: %s\n", baseCfg.Model)
 	}
 
 	if err := repl(baseCfg); err != nil {
