@@ -47,7 +47,7 @@ func baseConfig() (baseconfig.BaseConfig, error) {
 		return baseconfig.BaseConfig{}, err
 	}
 
-	yamlCfg, err := yamlconfig.NewYAMLConfig("gogent.yaml")
+	yamlCfg, err := yamlconfig.NewYAMLConfig(cliArgs.ConfigFilename)
 	if err != nil {
 		return baseconfig.BaseConfig{}, err
 	}
