@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
@@ -14,39 +11,6 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/genai"
 )
-
-func getPrompt() (string, bool) {
-	fmt.Println()
-	fmt.Println("Ask the agent something (press Enter twice to submit your prompt)")
-	fmt.Println("Submit a blank prompt to exit")
-	fmt.Print("> ")
-
-	scanner := bufio.NewScanner(os.Stdin)
-	var bld strings.Builder
-
-	for scanner.Scan() {
-		text := scanner.Text()
-
-		if strings.TrimSpace(text) == "" {
-			break
-		}
-
-		// Write an extra space, to make sure that words
-		// across newline boundaries don't run on to each
-		// other.
-		bld.WriteString(" ")
-		bld.WriteString(text)
-	}
-
-	// Nothing was written, meaning we must signal to our caller
-	// to not invoke the agent REPL.
-	if bld.Len() == 0 {
-		return "", true
-	}
-
-	fmt.Println("Thinking...")
-	return bld.String(), false
-}
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
