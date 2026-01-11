@@ -114,6 +114,18 @@ func repl(baseCfg baseconfig.BaseConfig) (err error) {
 	}
 }
 
+func handleFunCall(funCall *genai.FunctionCall, baseCfg baseconfig.BaseConfig) *genai.Part {
+	fnObj, err := functions.FunctionObject(funCall.Name)
+
+	if err != nil {
+		return functions.ResponseError(funCall.Name, fmt.Sprintf("Unknown function: %s", funCall.Name))
+	}
+
+	fn := fnObj.Function()
+
+	return fn(funCall.Args, baseCfg)
+}
+
 func getPrompt() (string, bool) {
 	fmt.Println()
 	fmt.Println("Ask the agent something (press Enter twice to submit your prompt)")

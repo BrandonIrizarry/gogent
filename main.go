@@ -6,10 +6,8 @@ import (
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
-	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
-	"google.golang.org/genai"
 )
 
 func main() {
@@ -47,16 +45,4 @@ func main() {
 	}
 
 	fmt.Println("Bye, come again soon!")
-}
-
-func handleFunCall(funCall *genai.FunctionCall, baseCfg baseconfig.BaseConfig) *genai.Part {
-	fnObj, err := functions.FunctionObject(funCall.Name)
-
-	if err != nil {
-		return functions.ResponseError(funCall.Name, fmt.Sprintf("Unknown function: %s", funCall.Name))
-	}
-
-	fn := fnObj.Function()
-
-	return fn(funCall.Args, baseCfg)
 }
