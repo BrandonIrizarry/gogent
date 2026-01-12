@@ -15,6 +15,9 @@ import (
 func main() {
 	// Load our environment variables (including the Gemini API
 	// key.)
+	//
+	// Note that, since we don't have our custom logger yet, we're
+	// using the default logger for now.
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
@@ -32,10 +35,15 @@ func main() {
 	}
 	defer logFile.Close()
 
+	// Now that we have the log file, define package main's local
+	// config struct. We can finally use our custom logger from
+	// now on.
+	cfg := initConfig(logFile, cliArgs.Verbose)
+
 	// YAML configuration.
 	yamlCfg, err := yamlconfig.NewYAMLConfig(cliArgs.ConfigFilename)
 	if err != nil {
-		log.Fatal(err)
+		cfg.log.Info.Fatal(err)
 	}
 
 	// Get the working directory from a TUI file picker.
@@ -43,16 +51,13 @@ func main() {
 
 	wdir, err := wdirCfg.SelectWorkingDir()
 	if err != nil {
-		log.Fatal(err)
+		cfg.log.Info.Fatal(err)
 	}
 
 	baseCfg := baseconfig.BaseConfig{
 		WorkingDir:  wdir,
 		MaxFilesize: yamlCfg.MaxFilesize,
 	}
-
-	// package main's local config struct.
-	cfg := initConfig(logFile, cliArgs.Verbose)
 
 	cfg.log.Verbose.Println()
 	cfg.log.Verbose.Println("Current settings:")
@@ -63,7 +68,7 @@ func main() {
 	cfg.log.Verbose.Printf("Model: %s\n", yamlCfg.Model)
 
 	if err := cfg.repl(yamlCfg.MaxIterations, yamlCfg.Model, yamlCfg.RenderStyle, baseCfg); err != nil {
-		log.Fatal(err)
+		cfg.log.Info.Fatal(err)
 	}
 
 	fmt.Println("Bye, come again soon!")
