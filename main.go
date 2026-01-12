@@ -7,7 +7,6 @@ import (
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
-	"github.com/BrandonIrizarry/gogent/internal/logger"
 	"github.com/BrandonIrizarry/gogent/internal/workingdir"
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
@@ -52,18 +51,18 @@ func main() {
 		MaxFilesize: yamlCfg.MaxFilesize,
 	}
 
-	// The logger local to main.
-	lg := logger.New(logFile, cliArgs.Verbose, "main")
+	// package main's local config struct.
+	cfg := initConfig(logFile, cliArgs.Verbose)
 
-	lg.Verbose.Println()
-	lg.Verbose.Println("Current settings:")
-	lg.Verbose.Printf("Working directory: %s\n", wdir)
-	lg.Verbose.Printf("Max iterations: %d\n", yamlCfg.MaxIterations)
-	lg.Verbose.Printf("Max filesize: %d\n", yamlCfg.MaxFilesize)
-	lg.Verbose.Printf("Render style: %s\n", yamlCfg.RenderStyle)
-	lg.Verbose.Printf("Model: %s\n", yamlCfg.Model)
+	cfg.log.Verbose.Println()
+	cfg.log.Verbose.Println("Current settings:")
+	cfg.log.Verbose.Printf("Working directory: %s\n", wdir)
+	cfg.log.Verbose.Printf("Max iterations: %d\n", yamlCfg.MaxIterations)
+	cfg.log.Verbose.Printf("Max filesize: %d\n", yamlCfg.MaxFilesize)
+	cfg.log.Verbose.Printf("Render style: %s\n", yamlCfg.RenderStyle)
+	cfg.log.Verbose.Printf("Model: %s\n", yamlCfg.Model)
 
-	if err := repl(yamlCfg.MaxIterations, yamlCfg.Model, yamlCfg.RenderStyle, baseCfg, lg); err != nil {
+	if err := cfg.repl(yamlCfg.MaxIterations, yamlCfg.Model, yamlCfg.RenderStyle, baseCfg); err != nil {
 		log.Fatal(err)
 	}
 
