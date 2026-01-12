@@ -7,13 +7,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func SelectWorkingDir() (string, error) {
+func (cfg config) SelectWorkingDir() (string, error) {
 	var err error
 
 	fp := filepicker.New()
 	fp.CurrentDirectory, err = os.UserHomeDir()
 	if err != nil {
-		logger.Fatal("Couldn't read home directory")
+		return "", err
 	}
 
 	// Configure the file picker to only allow selecting
@@ -24,15 +24,14 @@ func SelectWorkingDir() (string, error) {
 	fp.ShowSize = false
 	fp.Styles.EmptyDirectory = fp.Styles.EmptyDirectory.SetString("Directory is empty")
 
-	m := NewModel(fp)
+	m := cfg.NewModel(fp)
 
 	// FIXME: for now, don't look at any errors from running the
 	// file picker.
 	tm, _ := tea.NewProgram(&m).Run()
 	mm := tm.(model)
 
-	logger.Printf("selected dir: %s", mm.selectedDir)
-	logFile.Close()
+	cfg.log.Info.Printf("selected dir: %s", mm.selectedDir)
 
 	return mm.selectedDir, nil
 }

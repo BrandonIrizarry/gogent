@@ -16,11 +16,16 @@ type model struct {
 	// so that junk isn't left behind in the terminal after
 	// exiting.
 	quitting bool
+
+	// Embed the package's local config, so that we can also log
+	// as usual.
+	config
 }
 
-func NewModel(fp filepicker.Model) model {
+func (cfg config) NewModel(fp filepicker.Model) model {
 	return model{
 		filepicker: fp,
+		config:     cfg,
 	}
 }
 
@@ -47,19 +52,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// We're not using any file-extension filtering features, so
 	// we expect 'didSelect' to always be true.
 	if !didSelect {
-		logger.Printf("didn't select a file;  path=%s", path)
+		m.log.Info.Printf("didn't select a file;  path=%s", path)
 	} else {
 		m.selectedDir = path
-		logger.Printf("did select a file; path=%s", path)
+		m.log.Info.Printf("did select a file; path=%s", path)
 	}
 
-	logger.Printf("inside Update: %s", m.selectedDir)
+	m.log.Info.Printf("inside Update: %s", m.selectedDir)
 	return m, cmd
 }
 
 // View implements the tea.Model interface's View method.
 func (m model) View() string {
-	logger.Printf("inside View: %s", m.selectedDir)
+	m.log.Info.Printf("inside View: %s", m.selectedDir)
 	if m.quitting {
 		return ""
 	}

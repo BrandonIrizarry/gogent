@@ -3,69 +3,69 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
+	"github.com/BrandonIrizarry/gogent/internal/logger"
 	"github.com/BrandonIrizarry/gogent/internal/workingdir"
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
 	// Load our environment variables (including the Gemini API
 	// key.)
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
 
-	baseCfg, err := baseConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if baseCfg.Verbose {
-		fmt.Println()
-		fmt.Println("Current settings:")
-		fmt.Printf("Working directory: %s\n", baseCfg.WorkingDir)
-		fmt.Printf("Max iterations: %d\n", baseCfg.MaxIterations)
-		fmt.Printf("Max filesize: %d\n", baseCfg.MaxFilesize)
-		fmt.Printf("Render style: %s\n", baseCfg.RenderStyle)
-		fmt.Printf("Model: %s\n", baseCfg.Model)
-	}
-
-	if err := repl(baseCfg); err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Bye, come again soon!")
-}
-
-func baseConfig() (baseconfig.BaseConfig, error) {
 	// CLI arguments.
 	cliArgs, err := cliargs.NewCLIArguments()
 	if err != nil {
-		return baseconfig.BaseConfig{}, err
+		log.Fatal(err)
 	}
+
+	// Open up the log file.
+	logFile, err := os.OpenFile(cliArgs.LogFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logFile.Close()
 
 	// YAML configuration.
 	yamlCfg, err := yamlconfig.NewYAMLConfig(cliArgs.ConfigFilename)
 	if err != nil {
-		return baseconfig.BaseConfig{}, err
+		log.Fatal(err)
 	}
 
 	// Get the working directory from a TUI file picker.
-	wdir, err := workingdir.SelectWorkingDir()
+	wdirCfg := workingdir.InitConfig(logFile, cliArgs.Verbose)
+
+	wdir, err := wdirCfg.SelectWorkingDir()
 	if err != nil {
-		return baseconfig.BaseConfig{}, err
+		log.Fatal(err)
 	}
 
 	baseCfg := baseconfig.BaseConfig{
-		CLIArguments: cliArgs,
-		YAMLConfig:   yamlCfg,
-		WorkingDir:   wdir,
+		WorkingDir:  wdir,
+		MaxFilesize: yamlCfg.MaxFilesize,
 	}
 
-	return baseCfg, nil
+	// The logger local to main.
+	lg := logger.New(logFile, cliArgs.Verbose, "main")
+
+	lg.Verbose.Println()
+	lg.Verbose.Println("Current settings:")
+	lg.Verbose.Printf("Working directory: %s\n", wdir)
+	lg.Verbose.Printf("Max iterations: %d\n", yamlCfg.MaxIterations)
+	lg.Verbose.Printf("Max filesize: %d\n", yamlCfg.MaxFilesize)
+	lg.Verbose.Printf("Render style: %s\n", yamlCfg.RenderStyle)
+	lg.Verbose.Printf("Model: %s\n", yamlCfg.Model)
+
+	if err := repl(yamlCfg.MaxIterations, yamlCfg.Model, yamlCfg.RenderStyle, baseCfg, lg); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Bye, come again soon!")
 }

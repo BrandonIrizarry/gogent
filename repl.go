@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/functions"
+	"github.com/BrandonIrizarry/gogent/internal/logger"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/charmbracelet/glamour"
 	"google.golang.org/genai"
@@ -17,7 +17,7 @@ import (
 
 // repl launches a chat REPL with the agent, using the configuration
 // parameters found in baseCfg.
-func repl(baseCfg baseconfig.BaseConfig) (err error) {
+func repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.BaseConfig, lg logger.Logger) (err error) {
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
 
@@ -46,15 +46,13 @@ func repl(baseCfg baseconfig.BaseConfig) (err error) {
 		msgBuf.AddText(initialPrompt)
 
 		var response *genai.GenerateContentResponse
-		for i := 0; i < baseCfg.MaxIterations; i++ {
-			if baseCfg.Verbose {
-				fmt.Println()
-				log.Printf("New iteration: %d", i+1)
-			}
+		for i := range maxIterations {
+			lg.Verbose.Println()
+			lg.Verbose.Printf("New iteration: %d", i+1)
 
 			response, err = client.Models.GenerateContent(
 				ctx,
-				baseCfg.Model,
+				llmModel,
 				msgBuf.Messages,
 				&contentConfig,
 			)
@@ -63,10 +61,8 @@ func repl(baseCfg baseconfig.BaseConfig) (err error) {
 				return
 			}
 
-			if baseCfg.Verbose {
-				log.Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
-				log.Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
-			}
+			lg.Verbose.Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
+			lg.Verbose.Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
 
 			// Add the candidates to the message buffer. This
 			// conforms both to the Gemini documentation, as well
@@ -81,14 +77,12 @@ func repl(baseCfg baseconfig.BaseConfig) (err error) {
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				if baseCfg.Verbose {
-					log.Println("Printing text response:")
-					fmt.Println()
-				}
+				lg.Verbose.Println("Printing text response:")
+				lg.Verbose.Println()
 
 				text := response.Text()
-				if out, err := glamour.Render(text, baseCfg.RenderStyle); err != nil {
-					log.Println("Glamour rendering failed, defaulting to plain text")
+				if out, err := glamour.Render(text, renderStyle); err != nil {
+					lg.Info.Println("Glamour rendering failed, defaulting to plain text")
 					fmt.Println(text)
 				} else {
 					fmt.Println(out)
@@ -98,13 +92,11 @@ func repl(baseCfg baseconfig.BaseConfig) (err error) {
 			}
 
 			for _, funCall := range funCalls {
-				if baseCfg.Verbose {
-					log.Printf("Function call name: %s", funCall.Name)
+				lg.Verbose.Printf("Function call name: %s", funCall.Name)
 
-					for arg, val := range funCall.Args {
-						log.Printf(" - argument: %s", arg)
-						log.Printf(" - value: %v", val)
-					}
+				for arg, val := range funCall.Args {
+					lg.Verbose.Printf(" - argument: %s", arg)
+					lg.Verbose.Printf(" - value: %v", val)
 				}
 
 				funCallResponsePart := handleFunCall(funCall, baseCfg)
