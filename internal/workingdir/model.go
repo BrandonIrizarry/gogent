@@ -17,7 +17,7 @@ type model struct {
 	// exiting.
 	quitting bool
 
-	// Embed the package's local config, so that we can also log
+	// Embed the package's local config, so that we can log
 	// as usual.
 	config
 }
