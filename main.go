@@ -6,6 +6,7 @@ import (
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
+	"github.com/BrandonIrizarry/gogent/internal/workingdir"
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
 )
@@ -42,15 +43,29 @@ func main() {
 }
 
 func baseConfig() (baseconfig.BaseConfig, error) {
+	// CLI arguments.
 	cliArgs, err := cliargs.NewCLIArguments()
 	if err != nil {
 		return baseconfig.BaseConfig{}, err
 	}
 
+	// YAML configuration.
 	yamlCfg, err := yamlconfig.NewYAMLConfig(cliArgs.ConfigFilename)
 	if err != nil {
 		return baseconfig.BaseConfig{}, err
 	}
 
-	return baseconfig.BaseConfig{CLIArguments: cliArgs, YAMLConfig: yamlCfg}, nil
+	// Get the working directory from a TUI file picker.
+	wdir, err := workingdir.SelectWorkingDir()
+	if err != nil {
+		return baseconfig.BaseConfig{}, err
+	}
+
+	baseCfg := baseconfig.BaseConfig{
+		CLIArguments: cliArgs,
+		YAMLConfig:   yamlCfg,
+		WorkingDir:   wdir,
+	}
+
+	return baseCfg, nil
 }
