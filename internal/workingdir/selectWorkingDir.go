@@ -31,7 +31,5 @@ func (cfg localConfig) SelectWorkingDir() (string, error) {
 	tm, _ := tea.NewProgram(&m).Run()
 	mm := tm.(model)
 
-	cfg.log.Info.Printf("selected dir: %s", mm.selectedDir)
-
 	return mm.selectedDir, nil
 }

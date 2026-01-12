@@ -51,20 +51,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// We're not using any file-extension filtering features, so
 	// we expect 'didSelect' to always be true.
-	if !didSelect {
-		m.log.Info.Printf("didn't select a file;  path=%s", path)
-	} else {
+	if didSelect {
+		m.log.Info.Printf("selected %s", path)
 		m.selectedDir = path
-		m.log.Info.Printf("did select a file; path=%s", path)
 	}
 
-	m.log.Info.Printf("inside Update: %s", m.selectedDir)
 	return m, cmd
 }
 
 // View implements the tea.Model interface's View method.
 func (m model) View() string {
-	m.log.Info.Printf("inside View: %s", m.selectedDir)
 	if m.quitting {
 		return ""
 	}
