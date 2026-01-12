@@ -6,12 +6,12 @@ import (
 	"github.com/BrandonIrizarry/gogent/internal/logger"
 )
 
-type config struct {
+type localConfig struct {
 	log logger.Logger
 }
 
-func InitConfig(logFile *os.File, verbose bool) config {
-	var cfg config
+func InitConfig(logFile *os.File, verbose bool) localConfig {
+	var cfg localConfig
 
 	cfg.log = logger.New(logFile, verbose, "workingdir")
 

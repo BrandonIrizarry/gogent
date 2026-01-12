@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (cfg config) SelectWorkingDir() (string, error) {
+func (cfg localConfig) SelectWorkingDir() (string, error) {
 	var err error
 
 	fp := filepicker.New()

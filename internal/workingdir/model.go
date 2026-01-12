@@ -19,13 +19,13 @@ type model struct {
 
 	// Embed the package's local config, so that we can log
 	// as usual.
-	config
+	localConfig
 }
 
-func (cfg config) NewModel(fp filepicker.Model) model {
+func (cfg localConfig) NewModel(fp filepicker.Model) model {
 	return model{
-		filepicker: fp,
-		config:     cfg,
+		filepicker:  fp,
+		localConfig: cfg,
 	}
 }
 
