@@ -47,7 +47,7 @@ func repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.Ba
 
 		var response *genai.GenerateContentResponse
 		for i := range maxIterations {
-			logger.Info().Printf("New iteration: %d", i+1)
+			logger.Info.Printf("New iteration: %d", i+1)
 
 			response, err = client.Models.GenerateContent(
 				ctx,
@@ -60,8 +60,8 @@ func repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.Ba
 				return
 			}
 
-			logger.Info().Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
-			logger.Info().Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
+			logger.Info.Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
+			logger.Info.Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
 
 			// Add the candidates to the message buffer. This
 			// conforms both to the Gemini documentation, as well
@@ -76,11 +76,11 @@ func repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.Ba
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				logger.Info().Println("Printing text response:")
+				logger.Info.Println("Printing text response:")
 
 				text := response.Text()
 				if out, err := glamour.Render(text, renderStyle); err != nil {
-					logger.Info().Println("Glamour rendering failed, defaulting to plain text")
+					logger.Info.Println("Glamour rendering failed, defaulting to plain text")
 					fmt.Println(text)
 				} else {
 					fmt.Println(out)
@@ -90,11 +90,11 @@ func repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.Ba
 			}
 
 			for _, funCall := range funCalls {
-				logger.Info().Printf("Function call name: %s", funCall.Name)
+				logger.Info.Printf("Function call name: %s", funCall.Name)
 
 				for arg, val := range funCall.Args {
-					logger.Info().Printf(" - argument: %s", arg)
-					logger.Info().Printf(" - value: %v", val)
+					logger.Info.Printf(" - argument: %s", arg)
+					logger.Info.Printf(" - value: %v", val)
 				}
 
 				funCallResponsePart := handleFunCall(funCall, baseCfg)

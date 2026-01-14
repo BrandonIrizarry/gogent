@@ -17,7 +17,7 @@ func SelectWorkingDir() (string, error) {
 		return "", err
 	}
 
-	logger.Debug().Printf("Home dir: %s", fp.CurrentDirectory)
+	logger.Debug.Printf("Home dir: %s", fp.CurrentDirectory)
 
 	// Configure the file picker to only allow selecting
 	// directories. Also, don't display permissions, size, etc.

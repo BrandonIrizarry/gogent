@@ -17,13 +17,14 @@ const (
 	LogModeDebug
 )
 
-type Logger struct {
-	info  *log.Logger
-	debug *log.Logger
-	error *log.Logger
-}
+var (
+	Info  *log.Logger
+	Debug *log.Logger
 
-var logger Logger
+	// Don't export the error logger, since we only log errors
+	// with [ReportError].
+	errorLogger *log.Logger
+)
 
 // New returns a new Logger. The log file's lifetime is scoped by the
 // main function and so must be passed as the logFile parameter
@@ -47,23 +48,15 @@ func Init(logFile *os.File, verbositySetting LogMode) {
 	}
 
 	logFlags := log.Llongfile
-	logger = Logger{
-		info:  log.New(infoWriter, "INFO: ", logFlags),
-		debug: log.New(debugWriter, "DEBUG: ", logFlags),
-		error: log.New(errorWriter, "ERROR: ", logFlags),
-	}
+
+	Info = log.New(infoWriter, "INFO: ", logFlags)
+	Debug = log.New(debugWriter, "DEBUG: ", logFlags)
+	errorLogger = log.New(errorWriter, "ERROR: ", logFlags)
+
 }
 
-func Info() *log.Logger {
-	return logger.info
-}
-
-func Debug() *log.Logger {
-	return logger.debug
-}
-
-func Error(err error, msg string) error {
-	logger.error.Output(2, msg)
+func ReportError(err error, msg string) error {
+	errorLogger.Output(2, msg)
 
 	return fmt.Errorf("%s: %w", msg, err)
 }

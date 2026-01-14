@@ -48,7 +48,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// We're not using any file-extension filtering features, so
 	// we expect 'didSelect' to always be true.
 	if didSelect {
-		logger.Info().Printf("selected %s", path)
+		logger.Info.Printf("selected %s", path)
 		m.selectedDir = path
 	}
 

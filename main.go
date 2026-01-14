@@ -41,12 +41,12 @@ func main() {
 	// YAML configuration.
 	yamlCfg, err := yamlconfig.NewYAMLConfig(cliArgs.ConfigFilename)
 	if err != nil {
-		logger.Info().Fatal(err)
+		logger.Info.Fatal(err)
 	}
 
 	wdir, err := workingdir.SelectWorkingDir()
 	if err != nil {
-		logger.Info().Fatal(err)
+		logger.Info.Fatal(err)
 	}
 
 	baseCfg := baseconfig.BaseConfig{
@@ -54,16 +54,16 @@ func main() {
 		MaxFilesize: yamlCfg.MaxFilesize,
 	}
 
-	logger.Info().Println()
-	logger.Info().Println("Current settings:")
-	logger.Info().Printf("Working directory: %s\n", wdir)
-	logger.Info().Printf("Max iterations: %d\n", yamlCfg.MaxIterations)
-	logger.Info().Printf("Max filesize: %d\n", yamlCfg.MaxFilesize)
-	logger.Info().Printf("Render style: %s\n", yamlCfg.RenderStyle)
-	logger.Info().Printf("Model: %s\n", yamlCfg.Model)
+	logger.Info.Println()
+	logger.Info.Println("Current settings:")
+	logger.Info.Printf("Working directory: %s\n", wdir)
+	logger.Info.Printf("Max iterations: %d\n", yamlCfg.MaxIterations)
+	logger.Info.Printf("Max filesize: %d\n", yamlCfg.MaxFilesize)
+	logger.Info.Printf("Render style: %s\n", yamlCfg.RenderStyle)
+	logger.Info.Printf("Model: %s\n", yamlCfg.Model)
 
 	if err := repl(yamlCfg.MaxIterations, yamlCfg.Model, yamlCfg.RenderStyle, baseCfg); err != nil {
-		logger.Info().Fatal(err)
+		logger.Info.Fatal(err)
 	}
 
 	fmt.Println("Bye, come again soon!")
