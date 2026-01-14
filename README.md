@@ -26,5 +26,11 @@ are the logging messages that will appear in the logfile.
     
 Examples:
 
-`gogent -logmode `
-`gogent -logmode info,debug`
+`gogent -logmode info`  
+- Whitelists `INFO` log messages.
+
+`gogent -logmode debug`  
+- Whitelists `DEBUG` log messages.
+
+`gogent -logmode info,debug`  
+- Whitelists both `INFO` and `DEBUG` log messages.
