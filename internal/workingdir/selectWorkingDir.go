@@ -3,11 +3,12 @@ package workingdir
 import (
 	"os"
 
+	"github.com/BrandonIrizarry/gogent/internal/logger"
 	"github.com/charmbracelet/bubbles/filepicker"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (cfg localConfig) SelectWorkingDir() (string, error) {
+func SelectWorkingDir() (string, error) {
 	var err error
 
 	fp := filepicker.New()
@@ -15,6 +16,8 @@ func (cfg localConfig) SelectWorkingDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	logger.Debug().Printf("Home dir: %s", fp.CurrentDirectory)
 
 	// Configure the file picker to only allow selecting
 	// directories. Also, don't display permissions, size, etc.
@@ -24,7 +27,7 @@ func (cfg localConfig) SelectWorkingDir() (string, error) {
 	fp.ShowSize = false
 	fp.Styles.EmptyDirectory = fp.Styles.EmptyDirectory.SetString("Directory is empty")
 
-	m := cfg.NewModel(fp)
+	m := NewModel(fp)
 
 	// FIXME: for now, don't look at any errors from running the
 	// file picker.

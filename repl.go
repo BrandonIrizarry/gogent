@@ -9,6 +9,7 @@ import (
 
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/functions"
+	"github.com/BrandonIrizarry/gogent/internal/logger"
 	"github.com/BrandonIrizarry/gogent/internal/msgbuf"
 	"github.com/charmbracelet/glamour"
 	"google.golang.org/genai"
@@ -16,7 +17,7 @@ import (
 
 // repl launches a chat REPL with the agent, using the configuration
 // parameters found in baseCfg.
-func (cfg localConfig) repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.BaseConfig) (err error) {
+func repl(maxIterations int, llmModel, renderStyle string, baseCfg baseconfig.BaseConfig) (err error) {
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
 
@@ -46,8 +47,7 @@ func (cfg localConfig) repl(maxIterations int, llmModel, renderStyle string, bas
 
 		var response *genai.GenerateContentResponse
 		for i := range maxIterations {
-			cfg.log.Verbose.Println()
-			cfg.log.Verbose.Printf("New iteration: %d", i+1)
+			logger.Info().Printf("New iteration: %d", i+1)
 
 			response, err = client.Models.GenerateContent(
 				ctx,
@@ -60,8 +60,8 @@ func (cfg localConfig) repl(maxIterations int, llmModel, renderStyle string, bas
 				return
 			}
 
-			cfg.log.Verbose.Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
-			cfg.log.Verbose.Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
+			logger.Info().Printf("Prompt tokens: %d", response.UsageMetadata.PromptTokenCount)
+			logger.Info().Printf("Response tokens: %d", response.UsageMetadata.ThoughtsTokenCount)
 
 			// Add the candidates to the message buffer. This
 			// conforms both to the Gemini documentation, as well
@@ -76,12 +76,11 @@ func (cfg localConfig) repl(maxIterations int, llmModel, renderStyle string, bas
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				cfg.log.Verbose.Println("Printing text response:")
-				cfg.log.Verbose.Println()
+				logger.Info().Println("Printing text response:")
 
 				text := response.Text()
 				if out, err := glamour.Render(text, renderStyle); err != nil {
-					cfg.log.Info.Println("Glamour rendering failed, defaulting to plain text")
+					logger.Info().Println("Glamour rendering failed, defaulting to plain text")
 					fmt.Println(text)
 				} else {
 					fmt.Println(out)
@@ -91,11 +90,11 @@ func (cfg localConfig) repl(maxIterations int, llmModel, renderStyle string, bas
 			}
 
 			for _, funCall := range funCalls {
-				cfg.log.Verbose.Printf("Function call name: %s", funCall.Name)
+				logger.Info().Printf("Function call name: %s", funCall.Name)
 
 				for arg, val := range funCall.Args {
-					cfg.log.Verbose.Printf(" - argument: %s", arg)
-					cfg.log.Verbose.Printf(" - value: %v", val)
+					logger.Info().Printf(" - argument: %s", arg)
+					logger.Info().Printf(" - value: %v", val)
 				}
 
 				funCallResponsePart := handleFunCall(funCall, baseCfg)

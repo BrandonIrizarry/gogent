@@ -5,35 +5,64 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
+)
+
+type LogSetting int
+
+// There is no "LogSettingError" because logging errors is always
+// enabled.
+const (
+	LogSettingInfo LogSetting = 1 << iota
+	LogSettingDebug
 )
 
 type Logger struct {
-	Info    *log.Logger
-	Verbose *log.Logger
+	info  *log.Logger
+	debug *log.Logger
+	error *log.Logger
 }
 
-var logFlags = log.LstdFlags | log.Lshortfile
+var logger Logger
 
-// New returns a new Logger. The file pointer is passed as a
-// parameter, since closing it has to be managed from the main
-// function in main.go. The verbose flag enables clients to perform
-// verbose logging outside of conditional blocks.
-func New(logFile *os.File, verbose bool, packageName string) Logger {
-	var lg Logger
-	var verboseWriter io.Writer
+// New returns a new Logger. The log file's lifetime is scoped by the
+// main function and so must be passed as the logFile parameter
+// here. The verbositySetting is a bitfield specifying which loggers
+// to use.
+func Init(logFile *os.File, verbositySetting LogSetting) {
+	infoWriter := io.Discard
+	debugWriter := io.Discard
+	errorWriter := logFile
 
-	if verbose {
-		verboseWriter = io.MultiWriter(logFile, os.Stdout)
-	} else {
-		verboseWriter = io.Discard
+	if satisfies(verbositySetting, LogSettingInfo) {
+		infoWriter = logFile
 	}
 
-	prefix := fmt.Sprintf("%s: ", strings.ToUpper(packageName))
-	verbosePrefix := fmt.Sprintf("VERBOSE %s: ", strings.ToUpper(packageName))
+	if satisfies(verbositySetting, LogSettingDebug) {
+		debugWriter = logFile
+	}
 
-	lg.Info = log.New(logFile, prefix, logFlags)
-	lg.Verbose = log.New(verboseWriter, verbosePrefix, logFlags)
+	logFlags := log.LstdFlags | log.Llongfile
+	logger = Logger{
+		info:  log.New(infoWriter, "INFO: ", logFlags),
+		debug: log.New(debugWriter, "DEBUG: ", logFlags),
+		error: log.New(errorWriter, "ERROR: ", logFlags),
+	}
+}
 
-	return lg
+func Info() *log.Logger {
+	return logger.info
+}
+
+func Debug() *log.Logger {
+	return logger.debug
+}
+
+func Error(err error, msg string) error {
+	logger.error.Output(2, msg)
+
+	return fmt.Errorf("%s: %w", msg, err)
+}
+
+func satisfies(verbosity, mask LogSetting) bool {
+	return verbosity&mask == mask
 }
