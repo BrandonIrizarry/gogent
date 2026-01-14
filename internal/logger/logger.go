@@ -5,15 +5,16 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
-type LogSetting int
+type LogMode int
 
 // There is no "LogSettingError" because logging errors is always
 // enabled.
 const (
-	LogSettingInfo LogSetting = 1 << iota
-	LogSettingDebug
+	LogModeInfo LogMode = 1 << iota
+	LogModeDebug
 )
 
 type Logger struct {
@@ -28,7 +29,7 @@ var logger Logger
 // main function and so must be passed as the logFile parameter
 // here. The verbositySetting is a bitfield specifying which loggers
 // to use.
-func Init(logFile *os.File, verbositySetting LogSetting) {
+func Init(logFile *os.File, verbositySetting LogMode) {
 	// Use 'dest' in case it ever becomes feasible to log to
 	// stderr as well.
 	dest := logFile
@@ -37,11 +38,11 @@ func Init(logFile *os.File, verbositySetting LogSetting) {
 	debugWriter := io.Discard
 	errorWriter := dest
 
-	if satisfies(verbositySetting, LogSettingInfo) {
+	if satisfies(verbositySetting, LogModeInfo) {
 		infoWriter = dest
 	}
 
-	if satisfies(verbositySetting, LogSettingDebug) {
+	if satisfies(verbositySetting, LogModeDebug) {
 		debugWriter = dest
 	}
 
@@ -67,6 +68,31 @@ func Error(err error, msg string) error {
 	return fmt.Errorf("%s: %w", msg, err)
 }
 
-func satisfies(verbosity, mask LogSetting) bool {
-	return verbosity&mask == mask
+// Set implements the flag.Value interface. It's used by the cliargs
+// package to obtain the log settings from the command line.
+func (s *LogMode) Set(value string) error {
+	for setting := range strings.SplitSeq(value, ",") {
+		switch setting {
+		case "info":
+			*s |= LogModeInfo
+		case "debug":
+			*s |= LogModeDebug
+		default:
+			return fmt.Errorf("invalid log setting: %s", setting)
+		}
+	}
+
+	return nil
+}
+
+// String implements the flag.Value interface (see [Set] above.)
+func (s *LogMode) String() string {
+	switch *s {
+	case LogModeInfo:
+		return "info"
+	case LogModeDebug:
+		return "debug"
+	default:
+		return ""
+	}
 }

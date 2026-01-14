@@ -2,17 +2,24 @@ package cliargs
 
 import (
 	"flag"
+
+	"github.com/BrandonIrizarry/gogent/internal/logger"
 )
 
 type CLIArguments struct {
-	Verbose        bool
+	LogMode        logger.LogMode
 	ConfigFilename string
 	LogFilename    string
 }
 
 func NewCLIArguments() (CLIArguments, error) {
 	var cliArgs CLIArguments
-	flag.BoolVar(&cliArgs.Verbose, "verbose", false, "Whether to print usage metadata")
+	flag.Var(&cliArgs.LogMode, "logmode", `Comma-separated list of log-message types to output to logfile.
+
+Examples:
+-logmode debug
+-logmode info,debug
+`)
 	flag.StringVar(&cliArgs.ConfigFilename, "config", "gogent.yaml", "YAML configuration file (defaults to gogent.yaml)")
 	flag.StringVar(&cliArgs.LogFilename, "log", "logs.txt", "Path to logfile (defaults to logs.txt)")
 

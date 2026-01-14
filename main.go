@@ -36,7 +36,7 @@ func main() {
 	}
 	defer logFile.Close()
 
-	logger.Init(logFile, logger.LogSettingInfo|logger.LogSettingDebug)
+	logger.Init(logFile, cliArgs.LogMode)
 
 	// YAML configuration.
 	yamlCfg, err := yamlconfig.NewYAMLConfig(cliArgs.ConfigFilename)
