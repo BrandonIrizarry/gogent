@@ -29,19 +29,23 @@ var logger Logger
 // here. The verbositySetting is a bitfield specifying which loggers
 // to use.
 func Init(logFile *os.File, verbositySetting LogSetting) {
+	// Use 'dest' in case it ever becomes feasible to log to
+	// stderr as well.
+	dest := logFile
+
 	infoWriter := io.Discard
 	debugWriter := io.Discard
-	errorWriter := logFile
+	errorWriter := dest
 
 	if satisfies(verbositySetting, LogSettingInfo) {
-		infoWriter = logFile
+		infoWriter = dest
 	}
 
 	if satisfies(verbositySetting, LogSettingDebug) {
-		debugWriter = logFile
+		debugWriter = dest
 	}
 
-	logFlags := log.LstdFlags | log.Llongfile
+	logFlags := log.Llongfile
 	logger = Logger{
 		info:  log.New(infoWriter, "INFO: ", logFlags),
 		debug: log.New(debugWriter, "DEBUG: ", logFlags),
