@@ -85,7 +85,7 @@ func (s *LogMode) Set(value string) error {
 	return nil
 }
 
-// String implements the flag.Value interface (see [Set] above.)
+// String implements the flag.Value interface (see [LogMode.Set] above.)
 func (s *LogMode) String() string {
 	switch *s {
 	case LogModeInfo:
