@@ -30,6 +30,8 @@ func main() {
 	}
 
 	// Open up the log file.
+	//
+	// Don't append; start with a new logfile each time.
 	logFile, err := os.OpenFile(cliArgs.LogFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Fatal(err)
