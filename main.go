@@ -8,7 +8,6 @@ import (
 	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"github.com/BrandonIrizarry/gogent/internal/cliargs"
 	"github.com/BrandonIrizarry/gogent/internal/logger"
-	"github.com/BrandonIrizarry/gogent/internal/workingdir"
 	"github.com/BrandonIrizarry/gogent/internal/yamlconfig"
 	"github.com/joho/godotenv"
 )
@@ -20,13 +19,13 @@ func main() {
 	// Note that, since we don't have our custom logger yet, we're
 	// using the default logger for now.
 	if err := godotenv.Load(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// CLI arguments.
 	cliArgs, err := cliargs.NewCLIArguments()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Open up the log file.
@@ -46,19 +45,14 @@ func main() {
 		logger.Info.Fatal(err)
 	}
 
-	wdir, err := workingdir.SelectWorkingDir()
-	if err != nil {
-		logger.Info.Fatal(err)
-	}
-
 	baseCfg := baseconfig.BaseConfig{
-		WorkingDir:  wdir,
+		WorkingDir:  cliArgs.WorkingDir,
 		MaxFilesize: yamlCfg.MaxFilesize,
 	}
 
 	logger.Info.Println()
 	logger.Info.Println("Current settings:")
-	logger.Info.Printf("Working directory: %s\n", wdir)
+	logger.Info.Printf("Working directory: %s\n", cliArgs.WorkingDir)
 	logger.Info.Printf("Max iterations: %d\n", yamlCfg.MaxIterations)
 	logger.Info.Printf("Max filesize: %d\n", yamlCfg.MaxFilesize)
 	logger.Info.Printf("Render style: %s\n", yamlCfg.RenderStyle)
