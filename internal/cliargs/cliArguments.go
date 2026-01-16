@@ -50,5 +50,14 @@ Examples:
 		return CLIArguments{}, errors.New("Working directory not inside user's $HOME")
 	}
 
+	info, err := os.Stat(cliArgs.WorkingDir)
+	if err != nil {
+		return CLIArguments{}, err
+	}
+
+	if !info.IsDir() {
+		return CLIArguments{}, errors.New("Working directory argument not a directory")
+	}
+
 	return cliArgs, nil
 }
