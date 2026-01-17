@@ -1,7 +1,6 @@
 /*
-Package functions implements the behind-the-scenes, programmer-defined
-logic for LLM function, serving as the bridge between the model's
-intent and the guardrailed set of system capabilities.
+Package functions serves as the bridge between the model's intent and
+the guardrailed set of system capabilities.
 
 It is responsible for:
 
