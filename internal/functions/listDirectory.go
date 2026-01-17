@@ -5,21 +5,20 @@ import (
 	"os"
 	"strings"
 
-	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"google.golang.org/genai"
 )
 
-type listDirectoryType struct{}
+type listDirectory struct {
+	workingDir string
+}
 
-var listDirectory listDirectoryType
-
-func (fnobj listDirectoryType) Name() string {
+func (fnobj listDirectory) Name() string {
 	return "listDirectory"
 }
 
-func (fnobj listDirectoryType) Function() functionType {
-	return func(args map[string]any, baseCfg baseconfig.BaseConfig) *genai.Part {
-		dir, err := normalizePath(args["dir"], baseCfg.WorkingDir)
+func (fnobj listDirectory) Function() functionType {
+	return func(args map[string]any) *genai.Part {
+		dir, err := normalizePath(args["dir"], fnobj.workingDir)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())

@@ -1,4 +1,4 @@
-package main
+package gogent
 
 var systemInstruction = `
 You are a helpful AI coding agent.

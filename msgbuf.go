@@ -1,4 +1,4 @@
-package msgbuf
+package gogent
 
 import "google.golang.org/genai"
 

@@ -1,4 +1,0 @@
-max_iterations: 20
-max_filesize: 100000
-render_style: "light"
-model: "gemini-2.5-flash-lite-preview-09-2025"

@@ -11,64 +11,68 @@ type functionDeclarationConfig struct {
 	fnObj       functionObject
 }
 
-var declarations = map[string]functionDeclarationConfig{
-	"getFileContent": {
-		declaration: genai.FunctionDeclaration{
-			Name:        "getFileContent",
-			Description: "Read file contents",
-			Parameters: &genai.Schema{
-				Type: genai.TypeObject,
-				Properties: map[string]*genai.Schema{
-					"filepath": {
-						Type:        genai.TypeString,
-						Description: "Relative path to file",
+var declarations map[string]functionDeclarationConfig
+
+func Init(workingDir string, maxFilesize int) {
+	declarations = map[string]functionDeclarationConfig{
+		"getFileContent": {
+			declaration: genai.FunctionDeclaration{
+				Name:        "getFileContent",
+				Description: "Read file contents",
+				Parameters: &genai.Schema{
+					Type: genai.TypeObject,
+					Properties: map[string]*genai.Schema{
+						"filepath": {
+							Type:        genai.TypeString,
+							Description: "Relative path to file",
+						},
 					},
 				},
 			},
+
+			fnObj: getFileContent{workingDir: workingDir, maxFilesize: maxFilesize},
 		},
 
-		fnObj: getFileContent,
-	},
-
-	"getFileContentRecursively": {
-		declaration: genai.FunctionDeclaration{
-			Name:        "getFileContentRecursively",
-			Description: "Read contents of non-blacklisted files whose ancestor is the given directory.",
-			Parameters: &genai.Schema{
-				Type: genai.TypeObject,
-				Properties: map[string]*genai.Schema{
-					"dir": {
-						Type:        genai.TypeString,
-						Description: "Relative path to directory",
-					},
-					"depth": {
-						Type:        genai.TypeInteger,
-						Description: `How many directories deep to read file contents. The user can specify "no limit" to use an unbounded depth.`,
-					},
-				},
-			},
-		},
-
-		fnObj: getFileContentRecursively,
-	},
-
-	"listDirectory": {
-		declaration: genai.FunctionDeclaration{
-			Name:        "listDirectory",
-			Description: "List names of files in a directory, along with their sizes, and whether they're a directory.",
-			Parameters: &genai.Schema{
-				Type: genai.TypeObject,
-				Properties: map[string]*genai.Schema{
-					"dir": {
-						Type:        genai.TypeString,
-						Description: "Relative path to directory",
+		"getFileContentRecursively": {
+			declaration: genai.FunctionDeclaration{
+				Name:        "getFileContentRecursively",
+				Description: "Read contents of non-blacklisted files whose ancestor is the given directory.",
+				Parameters: &genai.Schema{
+					Type: genai.TypeObject,
+					Properties: map[string]*genai.Schema{
+						"dir": {
+							Type:        genai.TypeString,
+							Description: "Relative path to directory",
+						},
+						"depth": {
+							Type:        genai.TypeInteger,
+							Description: `How many directories deep to read file contents. The user can specify "no limit" to use an unbounded depth.`,
+						},
 					},
 				},
 			},
+
+			fnObj: getFileContentRecursively{workingDir: workingDir, maxFilesize: maxFilesize},
 		},
 
-		fnObj: listDirectory,
-	},
+		"listDirectory": {
+			declaration: genai.FunctionDeclaration{
+				Name:        "listDirectory",
+				Description: "List names of files in a directory, along with their sizes, and whether they're a directory.",
+				Parameters: &genai.Schema{
+					Type: genai.TypeObject,
+					Properties: map[string]*genai.Schema{
+						"dir": {
+							Type:        genai.TypeString,
+							Description: "Relative path to directory",
+						},
+					},
+				},
+			},
+
+			fnObj: listDirectory{workingDir: workingDir},
+		},
+	}
 }
 
 func FunctionDeclarations() []*genai.FunctionDeclaration {
@@ -83,7 +87,6 @@ func FunctionDeclarations() []*genai.FunctionDeclaration {
 
 func FunctionObject(name string) (functionObject, error) {
 	cfg, ok := declarations[name]
-
 	if !ok {
 		return nil, fmt.Errorf("Unknown function: %s", name)
 	}

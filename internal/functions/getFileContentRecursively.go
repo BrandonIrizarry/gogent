@@ -8,17 +8,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/BrandonIrizarry/gogent/internal/baseconfig"
 	"google.golang.org/genai"
 )
 
-type getFileContentRecursivelyType struct{}
+type getFileContentRecursively struct {
+	workingDir  string
+	maxFilesize int
+}
 
-// getFileContentsRecursively reads contents of all files under a
-// given directory. A depth parameter must be specified.
-var getFileContentRecursively getFileContentRecursivelyType
-
-func (fnobj getFileContentRecursivelyType) Name() string {
+func (g getFileContentRecursively) Name() string {
 	return "getFileContentRecursively"
 }
 
@@ -117,30 +115,30 @@ func allFilesMap(workingDir, dir string) (map[string]bool, error) {
 
 }
 
-func (fnobj getFileContentRecursivelyType) Function() functionType {
-	return func(args map[string]any, baseCfg baseconfig.BaseConfig) *genai.Part {
-		dir, err := normalizePath(args["dir"], baseCfg.WorkingDir)
+func (g getFileContentRecursively) Function() functionType {
+	// This callback reads contents of all files under a
+	// given directory. A depth parameter must be specified.
+	return func(args map[string]any) *genai.Part {
+		dir, err := normalizePath(args["dir"], g.workingDir)
 		if err != nil {
-			return ResponseError(fnobj.Name(), err.Error())
+			return ResponseError(g.Name(), err.Error())
 		}
 
-		all, err := allFilesMap(baseCfg.WorkingDir, dir)
+		all, err := allFilesMap(g.workingDir, dir)
 		if err != nil {
-			return ResponseError(fnobj.Name(), err.Error())
+			return ResponseError(g.Name(), err.Error())
 		}
 
 		var bld strings.Builder
 		for path := range all {
-			content, logs, err := fileContent(path, baseCfg.MaxFilesize)
+			content, err := fileContent(path, g.maxFilesize)
 			if err != nil {
-				return ResponseError(fnobj.Name(), err.Error())
+				return ResponseError(g.Name(), err.Error())
 			}
-
-			log.Println(logs)
 
 			fmt.Fprintf(&bld, "Contents of %s: %s\n\n", path, content)
 		}
 
-		return responseOK(fnobj.Name(), bld.String())
+		return responseOK(g.Name(), bld.String())
 	}
 }
