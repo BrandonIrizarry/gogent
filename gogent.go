@@ -15,21 +15,27 @@ type Gogent struct {
 	MaxFilesize   int
 	LLMModel      string
 	MaxIterations int
+	Debug         bool
 }
 
-func (g Gogent) Init() {
+type functionCallLoop func(string) (string, error)
+
+func (g Gogent) Init() (functionCallLoop, error) {
+	// Set the appropriate logging level.
+	if g.Debug {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	}
+
+	// Initialize any state needed by the function call objects
+	// themselves.
 	functions.Init(g.WorkingDir, g.MaxFilesize)
-}
 
-func (g Gogent) Ask(prompt string) (string, error) {
-	msgBuf := NewMsgBuf()
-	msgBuf.AddText(prompt)
-
+	// Initialize the LLM configuration, which must persist across
+	// calls to [Gogent.Ask].
 	ctx := context.Background()
-
 	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	tools := []*genai.Tool{
@@ -41,61 +47,71 @@ func (g Gogent) Ask(prompt string) (string, error) {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	var response *genai.GenerateContentResponse
+	msgbuf := NewMsgBuf()
 
-	for i := range g.MaxIterations {
-		slog.Info("New iteration", slog.Int("iteration", i))
+	// This is the actual code that processes the user prompt.
+	fn := func(prompt string) (string, error) {
+		// Initialize the message buffer with the user
+		// prompt. I'm making a careful note that this should
+		// be outside the function-call loop.
+		msgbuf.AddText(prompt)
 
-		response, err = client.Models.GenerateContent(
-			ctx,
-			g.LLMModel,
-			msgBuf.Messages,
-			&contentConfig,
-		)
-		if err != nil {
-			return "", err
-		}
+		for i := range g.MaxIterations {
+			slog.Info("Start of function-call loop:", slog.Int("iteration", i))
 
-		slog.Info(
-			"metadata",
-			slog.Int("prompt tokens", int(response.UsageMetadata.PromptTokenCount)),
-			slog.Int("response tokens", int(response.UsageMetadata.ThoughtsTokenCount)),
-		)
-
-		// Add the candidates to the message buffer. This
-		// conforms both to the Gemini documentation, as well
-		// as the Boot.dev AI Agent project.
-		for _, candidate := range response.Candidates {
-			msgBuf.AddMessage(candidate.Content)
-		}
-
-		// Check if the LLM has proposed any function calls to
-		// act upon.
-		funCalls := response.FunctionCalls()
-
-		// The LLM is ready to give a textual response.
-		if len(funCalls) == 0 {
-			slog.Info("Printing text response:")
-
-			return response.Text(), nil
-		}
-
-		for _, funCall := range funCalls {
-			for arg, val := range funCall.Args {
-				slog.Info(
-					"Function call",
-					slog.String("name", funCall.Name),
-					slog.String("arg", arg),
-					slog.Any("value", val),
-				)
+			response, err := client.Models.GenerateContent(
+				ctx,
+				g.LLMModel,
+				msgbuf.Messages,
+				&contentConfig,
+			)
+			if err != nil {
+				return "", err
 			}
 
-			funCallResponsePart := handleFunCall(funCall)
-			msgBuf.AddToolPart(funCallResponsePart)
+			slog.Info(
+				"metadata",
+				slog.Int("prompt tokens", int(response.UsageMetadata.PromptTokenCount)),
+				slog.Int("response tokens", int(response.UsageMetadata.ThoughtsTokenCount)),
+			)
+
+			// Add the candidates to the message buffer. This
+			// conforms both to the Gemini documentation, as well
+			// as the Boot.dev AI Agent project.
+			for _, candidate := range response.Candidates {
+				msgbuf.AddMessage(candidate.Content)
+			}
+
+			// Check if the LLM has proposed any function calls to
+			// act upon.
+			funCalls := response.FunctionCalls()
+
+			// The LLM is ready to give a textual response.
+			if len(funCalls) == 0 {
+				slog.Info("Printing text response:")
+
+				return response.Text(), nil
+			}
+
+			for _, funCall := range funCalls {
+				for arg, val := range funCall.Args {
+					slog.Info(
+						"Function call",
+						slog.String("name", funCall.Name),
+						slog.String("arg", arg),
+						slog.Any("value", val),
+					)
+				}
+
+				funCallResponsePart := handleFunCall(funCall)
+				msgbuf.AddToolPart(funCallResponsePart)
+			}
 		}
+
+		return "", errors.New("LLM didn't generate a text response")
 	}
 
-	return "", errors.New("LLM didn't generate a text response")
+	return fn, nil
 }
 
 func handleFunCall(funCall *genai.FunctionCall) *genai.Part {
