@@ -46,6 +46,17 @@ func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMeta
 	g.tokenCounts.Prompt += metadata.PromptTokenCount
 	g.tokenCounts.Thoughts += metadata.ThoughtsTokenCount
 	g.tokenCounts.Total += metadata.TotalTokenCount
+
+	// Also log the running totals.
+	slog.Info(
+		"Running Totals:",
+		slog.Any("prompt", g.tokenCounts.Prompt),
+		slog.Any("thoughts", g.tokenCounts.Thoughts),
+		slog.Any("cached", g.tokenCounts.Cached),
+		slog.Any("candidates", g.tokenCounts.Candidates),
+		slog.Any("tool_use", g.tokenCounts.ToolUse),
+		slog.Any("total", g.tokenCounts.Total),
+	)
 }
 
 func (g Gogent) TokenCounts() tokenCounts {
