@@ -75,9 +75,13 @@ func (g Gogent) Init() (askerFn, error) {
 			}
 
 			slog.Info(
-				"metadata",
-				slog.Int("prompt tokens", int(response.UsageMetadata.PromptTokenCount)),
-				slog.Int("response tokens", int(response.UsageMetadata.ThoughtsTokenCount)),
+				"Token Counts:",
+				slog.Int("prompt", int(response.UsageMetadata.PromptTokenCount)),
+				slog.Int("response", int(response.UsageMetadata.ThoughtsTokenCount)),
+				slog.Int("cached", int(response.UsageMetadata.CachedContentTokenCount)),
+				slog.Int("candidates", int(response.UsageMetadata.CandidatesTokenCount)),
+				slog.Int("tool_use", int(response.UsageMetadata.ToolUsePromptTokenCount)),
+				slog.Int("total", int(response.UsageMetadata.TotalTokenCount)),
 			)
 
 			// Add the candidates to the message buffer. This
