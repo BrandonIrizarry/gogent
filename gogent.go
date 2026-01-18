@@ -21,7 +21,7 @@ type Gogent struct {
 }
 
 type tokenCounts struct {
-	Cache, Candidates, ToolUse, Prompt, Thoughts, Total int32
+	Cached, Candidates, ToolUse, Prompt, Thoughts, Total int32
 }
 
 // incTokenCounts sums all individual token counts to provide an
@@ -40,7 +40,7 @@ func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMeta
 		slog.Int("total", int(metadata.TotalTokenCount)),
 	)
 
-	g.tokenCounts.Cache += metadata.CachedContentTokenCount
+	g.tokenCounts.Cached += metadata.CachedContentTokenCount
 	g.tokenCounts.Candidates += metadata.CandidatesTokenCount
 	g.tokenCounts.ToolUse += metadata.ToolUsePromptTokenCount
 	g.tokenCounts.Prompt += metadata.PromptTokenCount
