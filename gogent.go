@@ -27,6 +27,8 @@ type tokenCounts struct {
 // incTokenCounts sums all individual token counts to provide an
 // accessible report for the Gogent client. This is mainly so that the
 // client can keep costs under control.
+//
+// The metadata parameter is the LLM response's metadata.
 func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMetadata) {
 	slog.Info(
 		"Token Counts:",
