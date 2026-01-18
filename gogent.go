@@ -57,7 +57,7 @@ func (g Gogent) Init() (functionCallLoop, error) {
 		msgbuf.AddText(prompt)
 
 		for i := range g.MaxIterations {
-			slog.Info("Start of function-call loop:", slog.Int("iteration", i))
+			slog.Info("start of function-call loop:", slog.Int("iteration", i))
 
 			response, err := client.Models.GenerateContent(
 				ctx,
@@ -88,7 +88,7 @@ func (g Gogent) Init() (functionCallLoop, error) {
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				slog.Info("Printing text response:")
+				slog.Info("printing text response:")
 
 				return response.Text(), nil
 			}
@@ -96,7 +96,7 @@ func (g Gogent) Init() (functionCallLoop, error) {
 			for _, funCall := range funCalls {
 				for arg, val := range funCall.Args {
 					slog.Info(
-						"Function call",
+						"which function call",
 						slog.String("name", funCall.Name),
 						slog.String("arg", arg),
 						slog.Any("value", val),
