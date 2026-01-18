@@ -42,12 +42,10 @@ func (g Gogent) Init() (askerFn, error) {
 		return nil, err
 	}
 
-	tools := []*genai.Tool{
-		{FunctionDeclarations: functions.FunctionDeclarations()},
-	}
-
 	contentConfig := genai.GenerateContentConfig{
-		Tools:             tools,
+		Tools: []*genai.Tool{
+			{FunctionDeclarations: functions.FunctionDeclarations()},
+		},
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
