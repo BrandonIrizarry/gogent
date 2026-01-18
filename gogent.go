@@ -16,6 +16,37 @@ type Gogent struct {
 	LLMModel      string
 	MaxIterations int
 	Debug         bool
+
+	tokenCounts tokenCounts
+}
+
+type tokenCounts struct {
+	Cache, Candidates, ToolUse, Prompt, Thoughts int32
+}
+
+// incTokenCounts sums all individual token counts to provide an
+// accessible report for the Gogent client. This is mainly so that the
+// client can keep costs under control.
+func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMetadata) {
+	slog.Info(
+		"Token Counts:",
+		slog.Int("prompt", int(metadata.PromptTokenCount)),
+		slog.Int("response", int(metadata.ThoughtsTokenCount)),
+		slog.Int("cached", int(metadata.CachedContentTokenCount)),
+		slog.Int("candidates", int(metadata.CandidatesTokenCount)),
+		slog.Int("tool_use", int(metadata.ToolUsePromptTokenCount)),
+		slog.Int("total", int(metadata.TotalTokenCount)),
+	)
+
+	g.tokenCounts.Cache += metadata.CachedContentTokenCount
+	g.tokenCounts.Candidates += metadata.CandidatesTokenCount
+	g.tokenCounts.ToolUse += metadata.ToolUsePromptTokenCount
+	g.tokenCounts.Prompt += metadata.PromptTokenCount
+	g.tokenCounts.Thoughts += metadata.ThoughtsTokenCount
+}
+
+func (g Gogent) TokenCounts() tokenCounts {
+	return g.tokenCounts
 }
 
 type askerFn func(string) (string, error)
@@ -74,15 +105,7 @@ func (g Gogent) Init() (askerFn, error) {
 				return "", err
 			}
 
-			slog.Info(
-				"Token Counts:",
-				slog.Int("prompt", int(response.UsageMetadata.PromptTokenCount)),
-				slog.Int("response", int(response.UsageMetadata.ThoughtsTokenCount)),
-				slog.Int("cached", int(response.UsageMetadata.CachedContentTokenCount)),
-				slog.Int("candidates", int(response.UsageMetadata.CandidatesTokenCount)),
-				slog.Int("tool_use", int(response.UsageMetadata.ToolUsePromptTokenCount)),
-				slog.Int("total", int(response.UsageMetadata.TotalTokenCount)),
-			)
+			g.incTokenCounts(response.UsageMetadata)
 
 			// Add the candidates to the message buffer. This
 			// conforms both to the Gemini documentation, as well
