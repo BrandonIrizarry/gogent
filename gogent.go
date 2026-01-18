@@ -18,9 +18,14 @@ type Gogent struct {
 	Debug         bool
 }
 
-type functionCallLoop func(string) (string, error)
+type askerFn func(string) (string, error)
 
-func (g Gogent) Init() (functionCallLoop, error) {
+// Init initializes state used by the LLM, providing both the values
+// of the Gogent struct's own fields, as well as setting up any state
+// the LLM client needs to persist across prompt/response cycles. It
+// returns a function that clients can use to initiate a single
+// prompt/response cycle, likely in the context of some kind of REPL.
+func (g Gogent) Init() (askerFn, error) {
 	// Set the appropriate logging level.
 	if g.Debug {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
@@ -50,7 +55,10 @@ func (g Gogent) Init() (functionCallLoop, error) {
 	msgbuf := NewMsgBuf()
 
 	// This is the actual code that processes the user prompt.
-	fn := func(prompt string) (string, error) {
+	//
+	// Note that this function captures many of the configuration
+	// parameters defined just above.
+	asker := func(prompt string) (string, error) {
 		// Initialize the message buffer with the user
 		// prompt. I'm making a careful note that this should
 		// be outside the function-call loop.
@@ -111,7 +119,7 @@ func (g Gogent) Init() (functionCallLoop, error) {
 		return "", errors.New("LLM didn't generate a text response")
 	}
 
-	return fn, nil
+	return asker, nil
 }
 
 func handleFunCall(funCall *genai.FunctionCall) *genai.Part {
