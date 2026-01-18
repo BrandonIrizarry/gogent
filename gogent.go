@@ -40,10 +40,12 @@ func (h *Gogent) Write(p []byte) (n int, err error) {
 // response into p. This is where the LLM performs its thinking
 // operation.
 func (h Gogent) Read(p []byte) (n int, err error) {
-	response, err := think(string(p))
+	response, err := think(h.prompt)
 	if err != nil {
 		return 0, err
 	}
+
+	copy(p, []byte(response))
 
 	return len(response), nil
 }
