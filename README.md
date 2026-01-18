@@ -1,36 +1,36 @@
 # Introduction
 
-A CLI LLM coding agent using the Google Gemini API, written in Go.
+Gogent is a backend for implementing LLM agent frontend UIs, be they
+CLI, TUI, or GUI based.
 
-This is currently a work in progress.
+It is currently a work in progress.
 
-## Installation
+# Installation
 
-```sh
-    go install github.com/BrandonIrizarry/gogent@latest
-```
+`go get github/BrandonIrizarry/gogent`
 
-## CLI Flags
+Note that specific versions are available, viz.,
 
-### config
+`go get github/BrandonIrizarry/gogent@v0.1.0`
 
-The path to the app's YAML configuration file. Defaults to `gogent.yaml`.
 
-### log
-The path to the app's logfile. Defaults to `logs.txt`.
+# Motivation
 
-### logmode
-  
-One or more comma-separated log-message types. The values specified
-are the logging messages that will appear in the logfile.
-    
-Examples:
+Gogent originally started out as a CLI REPL-based coding agent. I then
+got the idea to upgrade the user interface to use the [BubbleTea](https://github.com/charmbracelet/bubbletea)
+TUI framework. I first added the file picker [bubble](https://github.com/charmbracelet/bubbles), and had
+plans to introduce configuration screens and such.
 
-`gogent -logmode info`  
-- Whitelists `INFO` log messages.
+At some point, I started getting confused over where to insert the
+BubbleTea stuff - the UI - on top of the LLM client logic; and so I
+decided to decouple them.
 
-`gogent -logmode debug`  
-- Whitelists `DEBUG` log messages.
+Now, I can write *various* frontends for the LLM agent, which now
+exports its own API for such frontends to consume. For example, I've
+already written a proof-of-concept CLI client UI, which more or less
+corresponds to the original Gogent project as it existed before the
+decoupling into frontend and backend. This frontend is what I
+currently use to test the backend, which is still in an early phase of
+development.
 
-`gogent -logmode info,debug`  
-- Whitelists both `INFO` and `DEBUG` log messages.
+
