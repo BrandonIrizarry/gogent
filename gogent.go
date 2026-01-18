@@ -35,8 +35,7 @@ func (g Gogent) Init() (askerFn, error) {
 	// themselves.
 	functions.Init(g.WorkingDir, g.MaxFilesize)
 
-	// Initialize the LLM configuration, which must persist across
-	// calls to [Gogent.Ask].
+	// Initialize the LLM configuration.
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
@@ -57,7 +56,7 @@ func (g Gogent) Init() (askerFn, error) {
 	// This is the actual code that processes the user prompt.
 	//
 	// Note that this function captures many of the configuration
-	// parameters defined just above.
+	// parameters defined just above (like 'client'.)
 	asker := func(prompt string) (string, error) {
 		// Initialize the message buffer with the user
 		// prompt. I'm making a careful note that this should
