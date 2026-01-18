@@ -10,47 +10,18 @@ import (
 	"google.golang.org/genai"
 )
 
-// FIXME: frontends are responsible for forwarding this stuff to
-// gogent's own internal data model.
-const (
-	maxIterations = 20
-	llmModel      = "gemini-2.5-flash-lite-preview-09-2025"
-	workingDir    = "."
-	maxFilesize   = 100_000
-)
-
 type Gogent struct {
-	prompt string
+	WorkingDir    string
+	MaxFilesize   int
+	LLMModel      string
+	MaxIterations int
 }
 
-func init() {
-	functions.Init(workingDir, maxFilesize)
+func (g Gogent) Init() {
+	functions.Init(g.WorkingDir, g.MaxFilesize)
 }
 
-// Write implements the [io.Writer] interface. It offloads the bytes
-// of p into Gogent. For now, all this does is tell Gogent about the
-// prompt; no thinking is done yet.
-func (h *Gogent) Write(p []byte) (n int, err error) {
-	h.prompt = string(p)
-
-	return len(p), nil
-}
-
-// Read implements the [io.Reader] interface. It loads the LLM's
-// response into p. This is where the LLM performs its thinking
-// operation.
-func (h Gogent) Read(p []byte) (n int, err error) {
-	response, err := think(h.prompt)
-	if err != nil {
-		return 0, err
-	}
-
-	copy(p, []byte(response))
-
-	return len(response), nil
-}
-
-func think(prompt string) (string, error) {
+func (g Gogent) Ask(prompt string) (string, error) {
 	msgBuf := NewMsgBuf()
 	msgBuf.AddText(prompt)
 
@@ -72,12 +43,12 @@ func think(prompt string) (string, error) {
 
 	var response *genai.GenerateContentResponse
 
-	for i := range maxIterations {
+	for i := range g.MaxIterations {
 		slog.Info("New iteration", slog.Int("iteration", i))
 
 		response, err = client.Models.GenerateContent(
 			ctx,
-			llmModel,
+			g.LLMModel,
 			msgBuf.Messages,
 			&contentConfig,
 		)
