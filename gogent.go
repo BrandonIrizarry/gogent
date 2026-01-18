@@ -33,7 +33,7 @@ func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMeta
 	slog.Info(
 		"Token Counts:",
 		slog.Int("prompt", int(metadata.PromptTokenCount)),
-		slog.Int("response", int(metadata.ThoughtsTokenCount)),
+		slog.Int("thoughts", int(metadata.ThoughtsTokenCount)),
 		slog.Int("cached", int(metadata.CachedContentTokenCount)),
 		slog.Int("candidates", int(metadata.CandidatesTokenCount)),
 		slog.Int("tool_use", int(metadata.ToolUsePromptTokenCount)),
