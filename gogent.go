@@ -58,7 +58,7 @@ type askerFn func(string) (string, error)
 // the LLM client needs to persist across prompt/response cycles. It
 // returns a function that clients can use to initiate a single
 // prompt/response cycle, likely in the context of some kind of REPL.
-func (g Gogent) Init() (askerFn, error) {
+func (g *Gogent) Init() (askerFn, error) {
 	// Set the appropriate logging level.
 	if g.Debug {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
