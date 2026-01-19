@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Print the list of items ignored by Git.
+# Print the list of all untracked files.
 #
 # There are other ways to achieve this, but this appears to be the
 # cleanest way, since it both lists actual directories, and doesn't
