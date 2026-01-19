@@ -3,8 +3,8 @@ package gogent
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/BrandonIrizarry/gogent/internal/functions"
 	"google.golang.org/genai"
@@ -82,7 +82,21 @@ func (g *Gogent) Init() (askerFn, error) {
 				&contentConfig,
 			)
 			if err != nil {
-				return "", fmt.Errorf("LLM couldn't generate response: %w", err)
+				msg := err.Error()
+
+				// If we've hit a RESOURCE_EXHAUSTED
+				// error, don't signal a quit to the
+				// client; simply return the error
+				// text as a valid response. In case
+				// of any other error, treat it as an
+				// actual show-stopping error and
+				// return accordingly.
+				if strings.HasPrefix(msg, "Error 429") {
+					return msg, nil
+				} else {
+					return "", err
+				}
+
 			}
 
 			g.incTokenCounts(response.UsageMetadata)
