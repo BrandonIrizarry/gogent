@@ -116,7 +116,7 @@ func (g *Gogent) Init() (askerFn, error) {
 					)
 				}
 
-				funCallResponsePart := handleFunCall(funCall)
+				funCallResponsePart := handleFunCall(funCall, g.WorkingDir)
 				msgbuf.AddToolPart(funCallResponsePart)
 			}
 		}

@@ -49,11 +49,7 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 	//
 	// Include the .git directory manually, since git ls-files
 	// doesn't list it.
-	gitDir, err := normalizePath(".git", workingDir)
-	if err != nil {
-		return nil, fmt.Errorf("not a Git repository: %s: %w", workingDir, err)
-	}
-
+	gitDir := filepath.Join(workingDir, ".git")
 	entries := map[string]bool{
 		gitDir: true,
 	}
@@ -69,11 +65,7 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 			continue
 		}
 
-		ne, err := normalizePath(e, workingDir)
-		if err != nil {
-			return nil, err
-		}
-
+		ne := filepath.Join(workingDir, e)
 		entries[ne] = true
 	}
 
@@ -84,14 +76,18 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 // and returns a set of absolute pathnames corresponding to files
 // underneath dir. This function uses ignoreFilesMap to avoid walking
 // down certain directories.
-func allFilesMap(workingDir, dir string) (map[string]bool, error) {
-	allFiles := make(map[string]bool)
+func allFilesMap(workingDir, relpath string) (map[string]bool, error) {
 	ignored, err := ignoredFilesMap(workingDir)
 	if err != nil {
 		return nil, err
 	}
 
-	filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	slog.Debug("After getting ignored files:", slog.Any("ignored", ignored))
+
+	allFiles := make(map[string]bool)
+	path := filepath.Join(workingDir, relpath)
+
+	filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		// It's a good idea to check 'd' for a nil value,
 		// since it's possible that, for example, 'dir' was
 		// malformed by some previous code and therefore the
@@ -124,18 +120,4 @@ func allFilesMap(workingDir, dir string) (map[string]bool, error) {
 
 	return allFiles, nil
 
-}
-
-// normalizePath takes the given path arg relative to workingDir, and
-// returns the corresponding full path. The argument workingDir is
-// assumed to already be an absolute path.
-func normalizePath(arg any, workingDir string) (string, error) {
-	path, ok := arg.(string)
-	if !ok {
-		return "", fmt.Errorf("Couldn't normalize '%v'", arg)
-	}
-
-	absPath := filepath.Join(workingDir, path)
-
-	return absPath, nil
 }

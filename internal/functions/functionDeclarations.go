@@ -8,6 +8,11 @@ import (
 
 var declarations map[string]functionDeclarationConfig
 
+const (
+	PropertyPath  = "path"
+	PropertyDepth = "depth"
+)
+
 func Init(workingDir string, maxFilesize int) {
 	declarations = map[string]functionDeclarationConfig{
 		"getFileContent": {
@@ -17,7 +22,7 @@ func Init(workingDir string, maxFilesize int) {
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"path": {
+						PropertyPath: {
 							Type:        genai.TypeString,
 							Description: "Relative path to file",
 						},
@@ -35,11 +40,11 @@ func Init(workingDir string, maxFilesize int) {
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"path": {
+						PropertyPath: {
 							Type:        genai.TypeString,
 							Description: "Relative path to directory",
 						},
-						"depth": {
+						PropertyDepth: {
 							Type:        genai.TypeInteger,
 							Description: `How many directories deep to read file contents. The user can specify "no limit" to use an unbounded depth.`,
 						},
@@ -57,7 +62,7 @@ func Init(workingDir string, maxFilesize int) {
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"path": {
+						PropertyPath: {
 							Type:        genai.TypeString,
 							Description: "Relative path to directory",
 						},

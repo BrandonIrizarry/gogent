@@ -14,10 +14,7 @@ func (g getFileContent) Function() functionType {
 	// there was an error in the internal logic, a Part corresponding to
 	// an error is returned.
 	return func(args map[string]any) *genai.Part {
-		path, err := normalizePath(args["path"], g.workingDir)
-		if err != nil {
-			return ResponseError(g.Name(), err.Error())
-		}
+		path := args[PropertyPath].(string)
 
 		content, err := fileContent(path, g.maxFilesize)
 		if err != nil {
