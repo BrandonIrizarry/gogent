@@ -14,7 +14,7 @@ func (fnobj listDirectory) Name() string {
 
 func (fnobj listDirectory) Function() functionType {
 	return func(args map[string]any) *genai.Part {
-		dir, err := normalizePath(args["dir"], fnobj.workingDir)
+		dir, err := normalizePath(args["path"], fnobj.workingDir)
 
 		if err != nil {
 			return ResponseError(fnobj.Name(), err.Error())

@@ -17,7 +17,7 @@ func Init(workingDir string, maxFilesize int) {
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"filepath": {
+						"path": {
 							Type:        genai.TypeString,
 							Description: "Relative path to file",
 						},
@@ -35,7 +35,7 @@ func Init(workingDir string, maxFilesize int) {
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"dir": {
+						"path": {
 							Type:        genai.TypeString,
 							Description: "Relative path to directory",
 						},
@@ -57,7 +57,7 @@ func Init(workingDir string, maxFilesize int) {
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"dir": {
+						"path": {
 							Type:        genai.TypeString,
 							Description: "Relative path to directory",
 						},
