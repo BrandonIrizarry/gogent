@@ -3,6 +3,7 @@ package gogent
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/BrandonIrizarry/gogent/internal/functions"
@@ -74,7 +75,7 @@ func (g *Gogent) Init() (askerFn, error) {
 				&contentConfig,
 			)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("LLM couldn't generate response: %w", err)
 			}
 
 			g.incTokenCounts(response.UsageMetadata)
