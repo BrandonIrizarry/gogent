@@ -11,11 +11,6 @@ import (
 	"google.golang.org/genai"
 )
 
-type getFileContentRecursively struct {
-	workingDir  string
-	maxFilesize int
-}
-
 func (g getFileContentRecursively) Name() string {
 	return "getFileContentRecursively"
 }

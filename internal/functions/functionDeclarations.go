@@ -6,11 +6,6 @@ import (
 	"google.golang.org/genai"
 )
 
-type functionDeclarationConfig struct {
-	declaration genai.FunctionDeclaration
-	fnObj       functionObject
-}
-
 var declarations map[string]functionDeclarationConfig
 
 func Init(workingDir string, maxFilesize int) {

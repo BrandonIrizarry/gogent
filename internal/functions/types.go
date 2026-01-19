@@ -1,8 +1,6 @@
 package functions
 
-import (
-	"google.golang.org/genai"
-)
+import "google.golang.org/genai"
 
 // functionType is the mandatory signature of each user-defined
 // function. The sole argument is the map of LLM-provided arguments. A
@@ -24,4 +22,23 @@ type functionObject interface {
 	// return value and then invoke it with the necessary
 	// arguments.
 	Function() functionType
+}
+
+type functionDeclarationConfig struct {
+	declaration genai.FunctionDeclaration
+	fnObj       functionObject
+}
+
+type getFileContent struct {
+	workingDir  string
+	maxFilesize int
+}
+
+type getFileContentRecursively struct {
+	workingDir  string
+	maxFilesize int
+}
+
+type listDirectory struct {
+	workingDir string
 }

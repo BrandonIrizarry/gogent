@@ -8,10 +8,6 @@ import (
 	"google.golang.org/genai"
 )
 
-type listDirectory struct {
-	workingDir string
-}
-
 func (fnobj listDirectory) Name() string {
 	return "listDirectory"
 }

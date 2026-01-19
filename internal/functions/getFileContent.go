@@ -4,11 +4,6 @@ import (
 	"google.golang.org/genai"
 )
 
-type getFileContent struct {
-	workingDir  string
-	maxFilesize int
-}
-
 func (g getFileContent) Name() string {
 	return "getFileContent"
 }
