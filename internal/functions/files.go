@@ -131,7 +131,6 @@ func allFilesMap(workingDir, dir string) (map[string]bool, error) {
 // assumed to already be an absolute path.
 func normalizePath(arg any, workingDir string) (string, error) {
 	path, ok := arg.(string)
-
 	if !ok {
 		return "", fmt.Errorf("Couldn't normalize '%v'", arg)
 	}
