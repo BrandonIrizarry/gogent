@@ -35,6 +35,13 @@ func (g *Gogent) Init() (askerFn, error) {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
 
+	slog.Info("Gogent configuration:",
+		slog.String("working_dir", g.WorkingDir),
+		slog.Int("max_file_size", g.MaxFilesize),
+		slog.String("llm_model", g.LLMModel),
+		slog.Int("max_iterations", g.MaxIterations),
+	)
+
 	// Initialize any state needed by the function call objects
 	// themselves.
 	functions.Init(g.WorkingDir, g.MaxFilesize)
