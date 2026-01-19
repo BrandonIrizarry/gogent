@@ -3,7 +3,6 @@ package functions
 import (
 	"fmt"
 	"io/fs"
-	"log"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -76,7 +75,7 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 // and returns a set of absolute pathnames corresponding to files
 // underneath dir. This function uses ignoreFilesMap to avoid walking
 // down certain directories.
-func allFilesMap(workingDir, relpath string) (map[string]bool, error) {
+func allFilesMap(workingDir, path string) (map[string]bool, error) {
 	ignored, err := ignoredFilesMap(workingDir)
 	if err != nil {
 		return nil, err
@@ -85,7 +84,6 @@ func allFilesMap(workingDir, relpath string) (map[string]bool, error) {
 	slog.Debug("After getting ignored files:", slog.Any("ignored", ignored))
 
 	allFiles := make(map[string]bool)
-	path := filepath.Join(workingDir, relpath)
 
 	filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		// It's a good idea to check 'd' for a nil value,
@@ -94,12 +92,17 @@ func allFilesMap(workingDir, relpath string) (map[string]bool, error) {
 		// current 'path' argument refers to a file or
 		// directory that doesn't exist.
 		if d == nil {
-			return fmt.Errorf("nil direntry object for path %s", path)
+			err := fmt.Errorf("nil direntry object for path %s", path)
+			slog.Error("Direntry error:", slog.Any("error", err))
+
+			return err
 		}
+
+		slog.Debug("Current path:", slog.String("path", path))
 
 		_, parentIsIgnored := ignored[filepath.Dir(path)]
 		if parentIsIgnored {
-			log.Printf("Skipping because parent is ignored: %s", path)
+			slog.Debug("Skipping because parent is ignored:", slog.String("path", path))
 			return filepath.SkipDir
 		}
 
@@ -109,7 +112,7 @@ func allFilesMap(workingDir, relpath string) (map[string]bool, error) {
 		if d.Type().IsRegular() {
 			_, fileIsIgnored := ignored[path]
 			if fileIsIgnored {
-				log.Printf("Skipping because file is ignored: %s", path)
+				slog.Debug("Skipping because file is ignored:", slog.String("path", path))
 			} else {
 				allFiles[path] = true
 			}
@@ -117,6 +120,8 @@ func allFilesMap(workingDir, relpath string) (map[string]bool, error) {
 
 		return nil
 	})
+
+	slog.Debug("After getting all tracked files:", slog.Any("tracked", allFiles))
 
 	return allFiles, nil
 
