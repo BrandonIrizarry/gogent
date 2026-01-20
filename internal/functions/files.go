@@ -68,8 +68,7 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 			continue
 		}
 
-		ne := filepath.Join(workingDir, e)
-		entries[ne] = true
+		entries[filepath.Join(workingDir, e)] = true
 	}
 
 	return entries, nil
