@@ -37,6 +37,10 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 	var bld strings.Builder
 
 	cmd := exec.Command("./ignored.sh")
+
+	// Aim the script at the project's working directory (not
+	// Gogent's working directory), and send the script's output
+	// to our string builder.
 	cmd.Dir = workingDir
 	cmd.Stdout = &bld
 
