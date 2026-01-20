@@ -92,10 +92,7 @@ func allFilesMap(workingDir, path string) (map[string]bool, error) {
 		// current 'path' argument refers to a file or
 		// directory that doesn't exist.
 		if d == nil {
-			err := fmt.Errorf("nil direntry object for path %s", path)
-			slog.Error("Direntry error:", slog.Any("error", err))
-
-			return err
+			return fmt.Errorf("nil direntry object for path %s", path)
 		}
 
 		slog.Debug("Current path:", slog.String("path", path))
