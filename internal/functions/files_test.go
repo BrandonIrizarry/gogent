@@ -69,7 +69,9 @@ func TestAllFilesMap(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	all, err := allFilesMap(wdir, ".")
+	// LLM functions now work with the canonicalized version of
+	// the project subdirectory (as opposed to the relative path.)
+	all, err := allFilesMap(wdir, wdir)
 	if err != nil {
 		t.Fatal(err)
 	}
