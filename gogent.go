@@ -3,6 +3,7 @@ package gogent
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -15,7 +16,7 @@ type Gogent struct {
 	MaxFilesize   int
 	LLMModel      string
 	MaxIterations int
-	Debug         bool
+	LogLevel      string
 
 	tokenCounts tokenCounts
 }
@@ -31,15 +32,26 @@ func (g Gogent) TokenCounts() tokenCounts {
 // prompt/response cycle, likely in the context of some kind of REPL.
 func (g *Gogent) Init() (askerFn, error) {
 	// Set the appropriate logging level.
-	if g.Debug {
-		slog.SetLogLoggerLevel(slog.LevelDebug)
+	logLevels := map[string]slog.Level{
+		"debug": slog.LevelDebug,
+		"info":  slog.LevelInfo,
+		"warn":  slog.LevelWarn,
+		"error": slog.LevelError,
 	}
+
+	level, ok := logLevels[g.LogLevel]
+	if !ok {
+		return nil, fmt.Errorf("invalid log level: %s", g.LogLevel)
+	}
+
+	slog.SetLogLoggerLevel(level)
 
 	slog.Info("Gogent configuration:",
 		slog.String("working_dir", g.WorkingDir),
 		slog.Int("max_file_size", g.MaxFilesize),
 		slog.String("llm_model", g.LLMModel),
 		slog.Int("max_iterations", g.MaxIterations),
+		slog.String("logging verbosity", g.LogLevel),
 	)
 
 	// Initialize any state needed by the function call objects
