@@ -70,39 +70,35 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 }
 
 // fileIsIgnored returns whether a file is untracked.
-func fileIsIgnored(path string) bool {
+func fileIsIgnored(ignoredPaths map[string]bool, path string) bool {
 	_, ok := ignoredPaths[path]
 	if ok {
 		return true
 	}
 
-	// Iterate backwards across the ancestor directories of
-	// path. If we reach the empty string, we haven't found
-	// anything.
-	ancestor := path
-	var buf []byte
-	count := 20
+	slog.Info("Before searching ignored paths:", slog.Any("ignored", ignoredPaths), slog.String("path", path))
+	for p := range ignoredPaths {
+		slog.Info("Ignored path/file", slog.String("path", p))
 
-	for {
-		buf = make([]byte, len(ancestor))
-		copy(buf, ancestor)
-
-		slog.Info("Inside for", slog.String("ancestor", path), slog.Int("count", count))
-		ancestor := filepath.Dir(string(buf))
-
-		if ancestor == "" {
-			return false
+		finfo, err := os.Stat(p)
+		if err != nil {
+			panic(err)
 		}
 
-		if ignoredPaths[ancestor] {
-			return true
-		}
-
-		count--
-		if count == 0 {
-			return false
+		if finfo.IsDir() {
+			slog.Info("is dir:", slog.String("name", p))
+			pdir := p + "/"
+			if strings.HasPrefix(path, pdir) {
+				return true
+			}
+		} else {
+			if strings.HasPrefix(path, p) {
+				return true
+			}
 		}
 	}
+
+	return false
 }
 
 // allFilesMap walks the filesystem starting at dir (an absolute path)

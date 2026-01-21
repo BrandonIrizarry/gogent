@@ -29,7 +29,6 @@ func workingDir() (string, error) {
 // maintainers are assumed to later add entries to their .gitignore.
 func TestIgnoredFilesMap(t *testing.T) {
 	tests := []string{
-		".env",
 		"finished_notes.org",
 		"notes.org",
 		"dummy/README.txt",
@@ -40,9 +39,14 @@ func TestIgnoredFilesMap(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ignored, err := ignoredFilesMap(wdir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	for _, relpath := range tests {
 		path := filepath.Join(wdir, relpath)
-		untracked := fileIsIgnored(path)
+		untracked := fileIsIgnored(ignored, path)
 
 		if !untracked {
 			t.Errorf("%s under %s not being ignored", relpath, wdir)

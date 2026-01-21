@@ -29,6 +29,7 @@ type functionDeclarationConfig struct {
 	fnObj       functionObject
 }
 
+// Types corresponding to LLM function calls.
 type getFileContent struct {
 	workingDir  string
 	maxFilesize int
