@@ -72,7 +72,7 @@ func (g *Gogent) Init() (askerFn, error) {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
-	msgbuf := NewMsgBuf()
+	msgbuf := []*genai.Content{}
 
 	// This is the actual code that processes the user prompt.
 	//
@@ -82,7 +82,7 @@ func (g *Gogent) Init() (askerFn, error) {
 		// Initialize the message buffer with the user
 		// prompt. I'm making a careful note that this should
 		// be outside the function-call loop.
-		msgbuf.AddText(prompt)
+		msgbuf = append(msgbuf, genai.NewContentFromText(prompt, genai.RoleUser))
 
 		for i := range g.MaxIterations {
 			slog.Info("Start of function-call loop:", slog.Int("iteration", i))
@@ -90,7 +90,7 @@ func (g *Gogent) Init() (askerFn, error) {
 			response, err := client.Models.GenerateContent(
 				ctx,
 				g.LLMModel,
-				msgbuf.Messages,
+				msgbuf,
 				&contentConfig,
 			)
 			if err != nil {
@@ -117,7 +117,7 @@ func (g *Gogent) Init() (askerFn, error) {
 			// conforms both to the Gemini documentation, as well
 			// as the Boot.dev AI Agent project.
 			for _, candidate := range response.Candidates {
-				msgbuf.AddMessage(candidate.Content)
+				msgbuf = append(msgbuf, candidate.Content)
 			}
 
 			// Check if the LLM has proposed any function calls to
@@ -143,7 +143,7 @@ func (g *Gogent) Init() (askerFn, error) {
 				}
 
 				funCallResponsePart := handleFunCall(funCall, g.WorkingDir)
-				msgbuf.AddToolPart(funCallResponsePart)
+				msgbuf = append(msgbuf, genai.NewContentFromParts([]*genai.Part{funCallResponsePart}, genai.RoleModel))
 			}
 		}
 
