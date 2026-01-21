@@ -69,8 +69,8 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 	return ignored, nil
 }
 
-// fileIsIgnored returns whether a file is untracked.
-func fileIsIgnored(ignoredPaths map[string]bool, path string) bool {
+// pathIsIgnored returns whether a file is untracked.
+func pathIsIgnored(ignoredPaths map[string]bool, path string) bool {
 	_, ok := ignoredPaths[path]
 	if ok {
 		return true

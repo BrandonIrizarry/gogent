@@ -46,7 +46,7 @@ func TestIgnoredFilesMap(t *testing.T) {
 
 	for _, relpath := range tests {
 		path := filepath.Join(wdir, relpath)
-		untracked := fileIsIgnored(ignored, path)
+		untracked := pathIsIgnored(ignored, path)
 
 		if !untracked {
 			t.Errorf("%s under %s not being ignored", relpath, wdir)
