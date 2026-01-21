@@ -76,25 +76,9 @@ func fileIsIgnored(ignoredPaths map[string]bool, path string) bool {
 		return true
 	}
 
-	slog.Info("Before searching ignored paths:", slog.Any("ignored", ignoredPaths), slog.String("path", path))
 	for p := range ignoredPaths {
-		slog.Info("Ignored path/file", slog.String("path", p))
-
-		finfo, err := os.Stat(p)
-		if err != nil {
-			panic(err)
-		}
-
-		if finfo.IsDir() {
-			slog.Info("is dir:", slog.String("name", p))
-			pdir := p + "/"
-			if strings.HasPrefix(path, pdir) {
-				return true
-			}
-		} else {
-			if strings.HasPrefix(path, p) {
-				return true
-			}
+		if strings.HasPrefix(path, p) {
+			return true
 		}
 	}
 
