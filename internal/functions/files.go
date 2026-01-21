@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// fileContent returns the contents of path.
+// fileContent returns the contents of path, which is absolute.
 func fileContent(path string, maxFilesize int) (string, error) {
 	fileBuf := make([]byte, maxFilesize)
 
@@ -34,15 +34,13 @@ func fileContent(path string, maxFilesize int) (string, error) {
 // per the project's .gitignore file. Each filename is an absolute
 // path.
 func ignoredFilesMap(workingDir string) (map[string]bool, error) {
-	var bld strings.Builder
+	var outputIgnored strings.Builder
 
 	cmd := exec.Command("./ignored.sh")
 
-	// Aim the script at the project's working directory (not
-	// Gogent's working directory), and send the script's output
-	// to our string builder.
+	// Aim the script at the project's working directory.
 	cmd.Dir = workingDir
-	cmd.Stdout = &bld
+	cmd.Stdout = &outputIgnored
 
 	if err := cmd.Run(); err != nil {
 		return nil, err
@@ -53,25 +51,58 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 	// Include the .git directory manually, since git ls-files
 	// doesn't list it.
 	gitDir := filepath.Join(workingDir, ".git")
-	entries := map[string]bool{
+	ignored := map[string]bool{
 		gitDir: true,
 	}
 
-	for e := range strings.SplitSeq(bld.String(), "\n") {
+	for e := range strings.SplitSeq(outputIgnored.String(), "\n") {
 		// Splitting creates empty-string entries, which later
 		// get confused as referring to the top-level
 		// directory. So we must skip them here.
-		//
-		// FIXME: defend against this where it gets
-		// seen by other functions.
 		if e == "" {
 			continue
 		}
 
-		entries[filepath.Join(workingDir, e)] = true
+		ignored[filepath.Join(workingDir, e)] = true
 	}
 
-	return entries, nil
+	return ignored, nil
+}
+
+// fileIsIgnored returns whether a file is untracked.
+func fileIsIgnored(path string) bool {
+	_, ok := ignoredPaths[path]
+	if ok {
+		return true
+	}
+
+	// Iterate backwards across the ancestor directories of
+	// path. If we reach the empty string, we haven't found
+	// anything.
+	ancestor := path
+	var buf []byte
+	count := 20
+
+	for {
+		buf = make([]byte, len(ancestor))
+		copy(buf, ancestor)
+
+		slog.Info("Inside for", slog.String("ancestor", path), slog.Int("count", count))
+		ancestor := filepath.Dir(string(buf))
+
+		if ancestor == "" {
+			return false
+		}
+
+		if ignoredPaths[ancestor] {
+			return true
+		}
+
+		count--
+		if count == 0 {
+			return false
+		}
+	}
 }
 
 // allFilesMap walks the filesystem starting at dir (an absolute path)

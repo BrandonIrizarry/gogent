@@ -56,7 +56,9 @@ func (g *Gogent) Init() (askerFn, error) {
 
 	// Initialize any state needed by the function call objects
 	// themselves.
-	functions.Init(g.WorkingDir, g.MaxFilesize)
+	if err := functions.Init(g.WorkingDir, g.MaxFilesize); err != nil {
+		return nil, err
+	}
 
 	// Initialize the LLM configuration.
 	ctx := context.Background()

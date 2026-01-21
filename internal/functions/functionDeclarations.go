@@ -13,7 +13,15 @@ const (
 	PropertyDepth = "depth"
 )
 
-func Init(workingDir string, maxFilesize int) {
+var ignoredPaths = map[string]bool{}
+
+func Init(workingDir string, maxFilesize int) error {
+	var err error
+	ignoredPaths, err = ignoredFilesMap(workingDir)
+	if err != nil {
+		return err
+	}
+
 	declarations = map[string]functionDeclarationConfig{
 		"getFileContent": {
 			declaration: genai.FunctionDeclaration{
@@ -73,6 +81,8 @@ func Init(workingDir string, maxFilesize int) {
 			fnObj: listDirectory{workingDir: workingDir},
 		},
 	}
+
+	return nil
 }
 
 func FunctionDeclarations() []*genai.FunctionDeclaration {

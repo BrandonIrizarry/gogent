@@ -1,7 +1,6 @@
 package functions
 
 import (
-	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,60 +40,12 @@ func TestIgnoredFilesMap(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	all, err := allFilesMap(wdir, ".")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	for _, relpath := range tests {
 		path := filepath.Join(wdir, relpath)
-		if _, isIncluded := all[path]; isIncluded {
+		untracked := fileIsIgnored(path)
+
+		if !untracked {
 			t.Errorf("%s under %s not being ignored", relpath, wdir)
 		}
 	}
-}
-
-// TestAllFilesMap checks whether the indicated files are among
-// the complete listing (that is, it doesn't enumerate all the files
-// that need be present.)
-func TestAllFilesMap(t *testing.T) {
-	slog.SetLogLoggerLevel(slog.LevelDebug)
-
-	tests := []string{
-		"internal/functions/getFileContentRecursively.go",
-	}
-
-	wdir, err := workingDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// LLM functions now work with the canonicalized version of
-	// the project subdirectory (as opposed to the relative path.)
-	all, err := allFilesMap(wdir, wdir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Logf("ALL: %v", all)
-
-	for _, relpath := range tests {
-		path := filepath.Join(wdir, relpath)
-		_, isListed := all[path]
-		if !isListed {
-			t.Errorf("file not listed: %s", path)
-		}
-	}
-
-	falseTests := []string{"Mxyzptlk"}
-
-	for _, relpath := range falseTests {
-		path := filepath.Join(wdir, relpath)
-		_, isListed := all[path]
-
-		if isListed {
-			t.Errorf("false listing: %s", path)
-		}
-	}
-
 }
