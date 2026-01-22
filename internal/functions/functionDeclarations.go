@@ -50,7 +50,7 @@ func Init(workingDir string, maxFilesize int) error {
 					Properties: map[string]*genai.Schema{
 						PropertyPath: {
 							Type:        genai.TypeString,
-							Description: "Relative path to directory",
+							Description: "Relative path to directory where files and other directories are contained",
 						},
 						PropertyDepth: {
 							Type:        genai.TypeInteger,
