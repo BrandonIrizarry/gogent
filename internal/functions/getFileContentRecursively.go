@@ -46,8 +46,11 @@ func (g getFileContentRecursively) Function() functionType {
 				return filepath.SkipDir
 			}
 
-			if !pathIsIgnored(ignoredPaths, path) {
-				trackedPaths = append(trackedPaths, path)
+			// Only do this if 'path' is actually a file.
+			if d.Type().IsRegular() {
+				if !pathIsIgnored(ignoredPaths, path) {
+					trackedPaths = append(trackedPaths, path)
+				}
 			}
 
 			return nil
