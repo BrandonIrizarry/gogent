@@ -21,7 +21,7 @@ func (g getFileContentRecursively) Function() functionType {
 		dir, ok := args[PropertyPath].(string)
 		if !ok {
 			err := fmt.Errorf("path either wrong type or not found: %v", args)
-			return g.ResponseError(err)
+			return ResponseError(g, err)
 		}
 
 		trackedPaths := []string{}
@@ -62,28 +62,12 @@ func (g getFileContentRecursively) Function() functionType {
 		for _, tracked := range trackedPaths {
 			content, err := fileContent(tracked, g.maxFilesize)
 			if err != nil {
-				return g.ResponseError(err)
+				return ResponseError(g, err)
 			}
 
 			fmt.Fprintf(&bld, "Contents of %s: %s\n\n", tracked, content)
 		}
 
-		return g.ResponseOK(bld.String())
+		return ResponseOK(g, bld.String())
 	}
-}
-
-func (g getFileContentRecursively) ResponseError(err error) *genai.Part {
-	message := err.Error()
-
-	slog.Error("Response error:", slog.String("error", message))
-
-	return genai.NewPartFromFunctionResponse(g.Name(), map[string]any{
-		"error": message,
-	})
-}
-
-func (g getFileContentRecursively) ResponseOK(content string) *genai.Part {
-	return genai.NewPartFromFunctionResponse(g.Name(), map[string]any{
-		"result": content,
-	})
 }

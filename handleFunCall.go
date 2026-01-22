@@ -12,7 +12,7 @@ func handleFunCall(funCall *genai.FunctionCall, workingDir string) *genai.Part {
 	fnObj, err := functions.FunctionObject(funCall.Name)
 	if err != nil {
 		errUnknownFunction := fmt.Errorf("unknown function: %s", funCall.Name)
-		return fnObj.ResponseError(errUnknownFunction)
+		return functions.ResponseError(fnObj, errUnknownFunction)
 	}
 
 	fn := fnObj.Function()
@@ -23,7 +23,7 @@ func handleFunCall(funCall *genai.FunctionCall, workingDir string) *genai.Part {
 		path, ok := pathArg.(string)
 		if !ok {
 			err := fmt.Errorf("path arg not found among Args: %v", funCall.Args)
-			return fnObj.ResponseError(err)
+			return functions.ResponseError(fnObj, err)
 		}
 		funCall.Args[functions.PropertyPath] = filepath.Join(workingDir, path)
 	}

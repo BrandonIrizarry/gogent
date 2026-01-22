@@ -22,15 +22,6 @@ type functionObject interface {
 	// return value and then invoke it with the necessary
 	// arguments.
 	Function() functionType
-
-	// ResponseError accepts an error and returns it as a
-	// [*genai.Part] object consumable by the LLM.
-	ResponseError(error) *genai.Part
-
-	// ResponseOK accepts a string message representing the output
-	// of an LLM function call, and returns it as a [*genai.Part]
-	// object consumable by the LLM.
-	ResponseOK(string) *genai.Part
 }
 
 type functionDeclarationConfig struct {

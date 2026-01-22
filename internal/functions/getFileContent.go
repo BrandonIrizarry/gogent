@@ -1,8 +1,6 @@
 package functions
 
 import (
-	"log/slog"
-
 	"google.golang.org/genai"
 )
 
@@ -20,25 +18,9 @@ func (g getFileContent) Function() functionType {
 
 		content, err := fileContent(path, g.maxFilesize)
 		if err != nil {
-			return g.ResponseError(err)
+			return ResponseError(g, err)
 		}
 
-		return g.ResponseOK(content)
+		return ResponseOK(g, content)
 	}
-}
-
-func (g getFileContent) ResponseError(err error) *genai.Part {
-	message := err.Error()
-
-	slog.Error("Response error:", slog.String("error", message))
-
-	return genai.NewPartFromFunctionResponse(g.Name(), map[string]any{
-		"error": message,
-	})
-}
-
-func (g getFileContent) ResponseOK(content string) *genai.Part {
-	return genai.NewPartFromFunctionResponse(g.Name(), map[string]any{
-		"result": content,
-	})
 }
