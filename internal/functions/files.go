@@ -43,7 +43,7 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 	cmd.Stdout = &outputIgnored
 
 	if err := cmd.Run(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error calling gitignore script: %w", err)
 	}
 
 	// Initialize the 'entries' map.
