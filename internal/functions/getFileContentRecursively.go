@@ -18,7 +18,12 @@ func (g getFileContentRecursively) Function() functionType {
 	// This callback reads contents of all files under a
 	// given directory. A depth parameter must be specified.
 	return func(args map[string]any) *genai.Part {
-		dir := args[PropertyPath].(string)
+		dir, ok := args[PropertyPath].(string)
+		if !ok {
+			err := fmt.Errorf("path either wrong type or not found: %v", args)
+			return g.ResponseError(err)
+		}
+
 		trackedPaths := []string{}
 
 		filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
