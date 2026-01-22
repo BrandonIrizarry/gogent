@@ -14,8 +14,6 @@ func (g getFileContentRecursively) Name() string {
 	return "getFileContentRecursively"
 }
 
-// FIXME: inline allFilesMap filesystem walking code into this
-// callback, using pathIsIgnored instead.
 func (g getFileContentRecursively) Function() functionType {
 	// This callback reads contents of all files under a
 	// given directory. A depth parameter must be specified.
