@@ -11,7 +11,8 @@ import (
 func handleFunCall(funCall *genai.FunctionCall, workingDir string) *genai.Part {
 	fnObj, err := functions.FunctionObject(funCall.Name)
 	if err != nil {
-		return functions.ResponseError(funCall.Name, fmt.Sprintf("Unknown function: %s", funCall.Name))
+		errUnknownFunction := fmt.Errorf("unknown function: %s", funCall.Name)
+		return fnObj.ResponseError(errUnknownFunction)
 	}
 
 	fn := fnObj.Function()

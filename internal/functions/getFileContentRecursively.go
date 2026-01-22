@@ -2,6 +2,7 @@ package functions
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"google.golang.org/genai"
@@ -20,19 +21,35 @@ func (g getFileContentRecursively) Function() functionType {
 		dir := args[PropertyPath].(string)
 		all, err := allFilesMap(g.workingDir, dir)
 		if err != nil {
-			return ResponseError(g.Name(), err.Error())
+			return g.ResponseError(err)
 		}
 
 		var bld strings.Builder
 		for path := range all {
 			content, err := fileContent(path, g.maxFilesize)
 			if err != nil {
-				return ResponseError(g.Name(), err.Error())
+				return g.ResponseError(err)
 			}
 
 			fmt.Fprintf(&bld, "Contents of %s: %s\n\n", path, content)
 		}
 
-		return responseOK(g.Name(), bld.String())
+		return g.ResponseOK(bld.String())
 	}
+}
+
+func (g getFileContentRecursively) ResponseError(err error) *genai.Part {
+	message := err.Error()
+
+	slog.Error("Response error:", slog.String("error", message))
+
+	return genai.NewPartFromFunctionResponse(g.Name(), map[string]any{
+		"error": message,
+	})
+}
+
+func (g getFileContentRecursively) ResponseOK(content string) *genai.Part {
+	return genai.NewPartFromFunctionResponse(g.Name(), map[string]any{
+		"result": content,
+	})
 }
