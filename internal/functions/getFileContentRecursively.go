@@ -2,7 +2,9 @@ package functions
 
 import (
 	"fmt"
+	"io/fs"
 	"log/slog"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/genai"
@@ -19,19 +21,45 @@ func (g getFileContentRecursively) Function() functionType {
 	// given directory. A depth parameter must be specified.
 	return func(args map[string]any) *genai.Part {
 		dir := args[PropertyPath].(string)
-		all, err := allFilesMap(g.workingDir, dir)
-		if err != nil {
-			return g.ResponseError(err)
-		}
+		trackedPaths := []string{}
+
+		filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+			// It's a good idea to check 'd' for a nil value,
+			// since it's possible that, for example, 'dir' was
+			// malformed by some previous code and therefore the
+			// current 'path' argument refers to a file or
+			// directory that doesn't exist.
+			if d == nil {
+				return fmt.Errorf("%s nonexistent (possibly malformed)", path)
+			}
+
+			slog.Debug("Current path:", slog.String("path", path))
+
+			// Skip the rest of the directory if the
+			// parent directory is ignored.
+			parent := filepath.Dir(path)
+			if pathIsIgnored(ignoredPaths, parent) {
+				slog.Debug("Skipping because parent is ignored:", slog.String("path", path))
+				return filepath.SkipDir
+			}
+
+			if !pathIsIgnored(ignoredPaths, path) {
+				trackedPaths = append(trackedPaths, path)
+			}
+
+			return nil
+		})
+
+		slog.Debug("After getting all tracked files:", slog.Any("tracked", trackedPaths))
 
 		var bld strings.Builder
-		for path := range all {
-			content, err := fileContent(path, g.maxFilesize)
+		for _, tracked := range trackedPaths {
+			content, err := fileContent(tracked, g.maxFilesize)
 			if err != nil {
 				return g.ResponseError(err)
 			}
 
-			fmt.Fprintf(&bld, "Contents of %s: %s\n\n", path, content)
+			fmt.Fprintf(&bld, "Contents of %s: %s\n\n", tracked, content)
 		}
 
 		return g.ResponseOK(bld.String())

@@ -2,7 +2,6 @@ package functions
 
 import (
 	"fmt"
-	"io/fs"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -34,11 +33,17 @@ func fileContent(path string, maxFilesize int) (string, error) {
 // per the project's .gitignore file. Each filename is an absolute
 // path.
 func ignoredFilesMap(workingDir string) (map[string]bool, error) {
-	var outputIgnored strings.Builder
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 
-	cmd := exec.Command("./ignored.sh")
+	slog.Debug("Before launching Git:", slog.String("current_dir", wd))
+	cmd := exec.Command("git", "clean", "-ndX")
 
 	// Aim the script at the project's working directory.
+	var outputIgnored strings.Builder
+
 	cmd.Dir = workingDir
 	cmd.Stdout = &outputIgnored
 
@@ -63,6 +68,9 @@ func ignoredFilesMap(workingDir string) (map[string]bool, error) {
 			continue
 		}
 
+		// Remove the 'Would remove' prefix.
+		e = strings.TrimPrefix(e, "Would remove ")
+
 		ignored[filepath.Join(workingDir, e)] = true
 	}
 
@@ -83,57 +91,4 @@ func pathIsIgnored(ignoredPaths map[string]bool, path string) bool {
 	}
 
 	return false
-}
-
-// allFilesMap walks the filesystem starting at dir (an absolute path)
-// and returns a set of absolute pathnames corresponding to files
-// underneath dir. This function uses ignoreFilesMap to avoid walking
-// down certain directories.
-func allFilesMap(workingDir, path string) (map[string]bool, error) {
-	ignored, err := ignoredFilesMap(workingDir)
-	if err != nil {
-		return nil, err
-	}
-
-	slog.Debug("After getting ignored files:", slog.Any("ignored", ignored))
-
-	allFiles := make(map[string]bool)
-
-	filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
-		// It's a good idea to check 'd' for a nil value,
-		// since it's possible that, for example, 'dir' was
-		// malformed by some previous code and therefore the
-		// current 'path' argument refers to a file or
-		// directory that doesn't exist.
-		if d == nil {
-			return fmt.Errorf("nil direntry object for path %s", path)
-		}
-
-		slog.Debug("Current path:", slog.String("path", path))
-
-		_, parentIsIgnored := ignored[filepath.Dir(path)]
-		if parentIsIgnored {
-			slog.Debug("Skipping because parent is ignored:", slog.String("path", path))
-			return filepath.SkipDir
-		}
-
-		// FIXME: for now we check for "regular files", though
-		// I'm not 100% sure this is what will always be
-		// sufficient.
-		if d.Type().IsRegular() {
-			_, fileIsIgnored := ignored[path]
-			if fileIsIgnored {
-				slog.Debug("Skipping because file is ignored:", slog.String("path", path))
-			} else {
-				allFiles[path] = true
-			}
-		}
-
-		return nil
-	})
-
-	slog.Debug("After getting all tracked files:", slog.Any("tracked", allFiles))
-
-	return allFiles, nil
-
 }
