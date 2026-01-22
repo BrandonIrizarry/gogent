@@ -21,7 +21,7 @@ func fileContent(path string, maxFilesize int) (string, error) {
 
 	numBytes, err := file.Read(fileBuf)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("fileContent: %w", err)
 	}
 
 	slog.Info("LLM file content read", slog.String("path", path), slog.Int("bytes", numBytes))
