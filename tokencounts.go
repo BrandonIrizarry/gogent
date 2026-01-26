@@ -1,8 +1,7 @@
 package gogent
 
 import (
-	"log/slog"
-
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genai"
 )
 
@@ -16,15 +15,15 @@ type tokenCounts struct {
 //
 // The metadata parameter is the LLM response's metadata.
 func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMetadata) {
-	slog.Info(
-		"Token Counts:",
-		slog.Int("prompt", int(metadata.PromptTokenCount)),
-		slog.Int("thoughts", int(metadata.ThoughtsTokenCount)),
-		slog.Int("cached", int(metadata.CachedContentTokenCount)),
-		slog.Int("candidates", int(metadata.CandidatesTokenCount)),
-		slog.Int("tool_use", int(metadata.ToolUsePromptTokenCount)),
-		slog.Int("total", int(metadata.TotalTokenCount)),
-	)
+	log.Info().
+		Int32("prompt", metadata.PromptTokenCount).
+		Int32("prompt", metadata.PromptTokenCount).
+		Int32("thoughts", metadata.ThoughtsTokenCount).
+		Int32("cached", metadata.CachedContentTokenCount).
+		Int32("candidates", metadata.CandidatesTokenCount).
+		Int32("tool_use", metadata.ToolUsePromptTokenCount).
+		Int32("total", metadata.TotalTokenCount).
+		Msg("Current metadata counts:")
 
 	g.tokenCounts.Cached += metadata.CachedContentTokenCount
 	g.tokenCounts.Candidates += metadata.CandidatesTokenCount
@@ -34,13 +33,12 @@ func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMeta
 	g.tokenCounts.Total += metadata.TotalTokenCount
 
 	// Also log the running totals.
-	slog.Info(
-		"Running Totals:",
-		slog.Any("prompt", g.tokenCounts.Prompt),
-		slog.Any("thoughts", g.tokenCounts.Thoughts),
-		slog.Any("cached", g.tokenCounts.Cached),
-		slog.Any("candidates", g.tokenCounts.Candidates),
-		slog.Any("tool_use", g.tokenCounts.ToolUse),
-		slog.Any("total", g.tokenCounts.Total),
-	)
+	log.Info().
+		Int32("prompt", g.tokenCounts.Prompt).
+		Int32("thoughts", g.tokenCounts.Thoughts).
+		Int32("cached", g.tokenCounts.Cached).
+		Int32("candidates", g.tokenCounts.Candidates).
+		Int32("tool_use", g.tokenCounts.ToolUse).
+		Int32("total", g.tokenCounts.Total).
+		Msg("Running totals:")
 }
