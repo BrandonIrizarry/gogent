@@ -2,7 +2,6 @@ package functions
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 
@@ -19,7 +18,7 @@ func (fnobj listDirectory) Function() functionType {
 		files, err := os.ReadDir(dir)
 
 		if err != nil {
-			return fnobj.ResponseError(err)
+			return ResponseError(fnobj, err)
 		}
 
 		bld := strings.Builder{}
@@ -28,32 +27,16 @@ func (fnobj listDirectory) Function() functionType {
 			info, err := file.Info()
 
 			if err != nil {
-				return fnobj.ResponseError(err)
+				return ResponseError(fnobj, err)
 			}
 
 			snippet := fmt.Sprintf("- %s: size=%d bytes, isDir: %v\n", info.Name(), info.Size(), info.IsDir())
 
 			if _, err := bld.WriteString(snippet); err != nil {
-				return fnobj.ResponseError(err)
+				return ResponseError(fnobj, err)
 			}
 		}
 
-		return fnobj.ResponseOK(bld.String())
+		return ResponseOK(fnobj, bld.String())
 	}
-}
-
-func (fnobj listDirectory) ResponseError(err error) *genai.Part {
-	message := err.Error()
-
-	slog.Error("Response error:", slog.String("error", message))
-
-	return genai.NewPartFromFunctionResponse(fnobj.Name(), map[string]any{
-		"error": message,
-	})
-}
-
-func (fnobj listDirectory) ResponseOK(content string) *genai.Part {
-	return genai.NewPartFromFunctionResponse(fnobj.Name(), map[string]any{
-		"result": content,
-	})
 }
