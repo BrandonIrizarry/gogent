@@ -15,9 +15,6 @@ var systemInstruction = `
   is ambiguous, always ask the user for clarification (e.g., "Do you mean the
   current working directory?").
 
-    3.  **File Operations:** Never output the contents of a file to the
-  console without first asking for the user's explicit permission.
-
     **Tool Usage Guidelines:**
 
     *   **Relative Paths:** All file paths you provide in tool calls must be
