@@ -23,7 +23,7 @@ func (g *Gogent) incTokenCounts(metadata *genai.GenerateContentResponseUsageMeta
 		Int32("candidates", metadata.CandidatesTokenCount).
 		Int32("tool_use", metadata.ToolUsePromptTokenCount).
 		Int32("total", metadata.TotalTokenCount).
-		Msg("Current metadata counts:")
+		Msg("Token counts:")
 
 	g.tokenCounts.Cached += metadata.CachedContentTokenCount
 	g.tokenCounts.Candidates += metadata.CandidatesTokenCount

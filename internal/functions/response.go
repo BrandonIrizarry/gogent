@@ -1,8 +1,7 @@
 package functions
 
 import (
-	"log/slog"
-
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genai"
 )
 
@@ -11,10 +10,10 @@ import (
 func ResponseError(fnObj functionObject, err error) *genai.Part {
 	message := err.Error()
 
-	slog.Error("Response error:",
-		slog.String("error", message),
-		slog.String("function", fnObj.Name()),
-	)
+	log.Error().
+		Err(err).
+		Str("function", fnObj.Name()).
+		Msg("response error")
 
 	return genai.NewPartFromFunctionResponse(fnObj.Name(), map[string]any{
 		"error":    message,
@@ -26,9 +25,9 @@ func ResponseError(fnObj functionObject, err error) *genai.Part {
 // of an LLM function call, and returns it as a [*genai.Part]
 // object consumable by the LLM.
 func ResponseOK(fnObj functionObject, content string) *genai.Part {
-	slog.Info("Response OK:",
-		slog.String("function", fnObj.Name()),
-	)
+	log.Info().
+		Str("function", fnObj.Name()).
+		Msg("response OK")
 
 	return genai.NewPartFromFunctionResponse(fnObj.Name(), map[string]any{
 		"result":   content,

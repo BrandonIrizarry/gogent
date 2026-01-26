@@ -2,7 +2,6 @@ package functions
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,12 +18,10 @@ func fileContent(path string, maxFilesize int) (string, error) {
 	}
 	defer file.Close()
 
-	numBytes, err := file.Read(fileBuf)
+	_, err = file.Read(fileBuf)
 	if err != nil {
 		return "", fmt.Errorf("fileContent: %w", err)
 	}
-
-	slog.Info("LLM file content read", slog.String("path", path), slog.Int("bytes", numBytes))
 
 	return string(fileBuf), nil
 }
@@ -33,12 +30,11 @@ func fileContent(path string, maxFilesize int) (string, error) {
 // per the project's .gitignore file. Each filename is an absolute
 // path.
 func ignoredFilesMap(workingDir string) (map[string]bool, error) {
-	wd, err := os.Getwd()
+	_, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
-	slog.Debug("Before launching Git:", slog.String("current_dir", wd))
 	cmd := exec.Command("git", "clean", "-ndX")
 
 	// Aim the script at the project's working directory.

@@ -3,7 +3,6 @@ package functions
 import (
 	"fmt"
 	"io/fs"
-	"log/slog"
 	"path/filepath"
 	"strings"
 
@@ -36,13 +35,10 @@ func (g getFileContentRecursively) Function() functionType {
 				return fmt.Errorf("%s nonexistent (possibly malformed)", path)
 			}
 
-			slog.Debug("Current path:", slog.String("path", path))
-
 			// Skip the rest of the directory if the
 			// parent directory is ignored.
 			parent := filepath.Dir(path)
 			if pathIsIgnored(ignoredPaths, parent) {
-				slog.Debug("Skipping because parent is ignored:", slog.String("path", path))
 				return filepath.SkipDir
 			}
 
@@ -55,8 +51,6 @@ func (g getFileContentRecursively) Function() functionType {
 
 			return nil
 		})
-
-		slog.Debug("After getting all tracked files:", slog.Any("tracked", trackedPaths))
 
 		var bld strings.Builder
 		for _, tracked := range trackedPaths {
