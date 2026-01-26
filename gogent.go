@@ -3,11 +3,12 @@ package gogent
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/BrandonIrizarry/gogent/internal/functions"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genai"
 )
 
@@ -16,7 +17,6 @@ type Gogent struct {
 	MaxFilesize   int
 	LLMModel      string
 	MaxIterations int
-	LogLevel      string
 
 	tokenCounts tokenCounts
 }
@@ -31,28 +31,14 @@ func (g Gogent) TokenCounts() tokenCounts {
 // returns a function that clients can use to initiate a single
 // prompt/response cycle, likely in the context of some kind of REPL.
 func (g *Gogent) Init() (askerFn, error) {
-	// Set the appropriate logging level.
-	logLevels := map[string]slog.Level{
-		"debug": slog.LevelDebug,
-		"info":  slog.LevelInfo,
-		"warn":  slog.LevelWarn,
-		"error": slog.LevelError,
-	}
+	zerolog.TimeFieldFormat = time.TimeOnly
 
-	level, ok := logLevels[g.LogLevel]
-	if !ok {
-		return nil, fmt.Errorf("invalid log level: %s", g.LogLevel)
-	}
-
-	slog.SetLogLoggerLevel(level)
-
-	slog.Info("Gogent configuration:",
-		slog.String("working_dir", g.WorkingDir),
-		slog.Int("max_file_size", g.MaxFilesize),
-		slog.String("llm_model", g.LLMModel),
-		slog.Int("max_iterations", g.MaxIterations),
-		slog.String("logging verbosity", g.LogLevel),
-	)
+	log.Info().
+		Str("working_dir", g.WorkingDir).
+		Int("max_file_size", g.MaxFilesize).
+		Str("llm_model", g.LLMModel).
+		Int("max_iterations", g.MaxIterations).
+		Msg("Gogent configuration")
 
 	// Initialize any state needed by the function call objects
 	// themselves.
@@ -87,7 +73,9 @@ func (g *Gogent) Init() (askerFn, error) {
 		msgbuf = append(msgbuf, genai.NewContentFromText(prompt, genai.RoleUser))
 
 		for i := range g.MaxIterations {
-			slog.Info("Start of function-call loop:", slog.Int("iteration", i))
+			log.Info().
+				Int("iteration", i).
+				Msg("Start of function-call loop")
 
 			response, err := client.Models.GenerateContent(
 				ctx,
@@ -129,19 +117,18 @@ func (g *Gogent) Init() (askerFn, error) {
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
 				text := response.Text()
-				slog.Info("Printing text response:", slog.Int("length", len(text)))
+				log.Info().Msg("Printing text response")
 
 				return text, nil
 			}
 
 			for _, funCall := range funCalls {
 				for arg, val := range funCall.Args {
-					slog.Info(
-						"Function call:",
-						slog.String("name", funCall.Name),
-						slog.String("arg", arg),
-						slog.Any("value", val),
-					)
+					log.Trace().
+						Str("name", funCall.Name).
+						Str("arg", arg).
+						Any("value", val).
+						Msg("Function call:")
 				}
 
 				funCallResponsePart := handleFunCall(funCall, g.WorkingDir)
