@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,10 +34,14 @@ func (g Gogent) TokenCounts() tokenCounts {
 // returns a function that clients can use to initiate a single
 // prompt/response cycle, likely in the context of some kind of REPL.
 func (g *Gogent) Init() (askerFn, error) {
+	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
+		return filepath.Base(file) + ":" + strconv.Itoa(line)
+	}
+
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:        os.Stderr,
 		TimeFormat: time.TimeOnly,
-	})
+	}).With().Caller().Logger()
 
 	log.Info().
 		Str("working_dir", g.WorkingDir).
