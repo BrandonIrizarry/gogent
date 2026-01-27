@@ -6,7 +6,27 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
+
+// canonicalize prefixes the rawPath argument found among the LLM
+// function call argments with the workingDir argument. The workingDir
+// argument should've already been made into an absolute path by this
+// point; hence, the string return value of this function should be an
+// absolute path.
+func canonicalize(pathArg any, workingDir string) (string, error) {
+	log.Trace().
+		Any("path", pathArg).
+		Send()
+
+	path, ok := pathArg.(string)
+	if !ok {
+		return "", fmt.Errorf("invalid path arg: %v", pathArg)
+	}
+
+	return filepath.Join(workingDir, path), nil
+}
 
 // fileContent returns the contents of path, which is absolute.
 func fileContent(path string, maxFilesize int) (string, error) {

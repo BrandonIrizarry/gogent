@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genai"
 )
 
@@ -14,7 +15,19 @@ func (fnobj listDirectory) Name() string {
 
 func (fnobj listDirectory) Function() functionType {
 	return func(args map[string]any) *genai.Part {
-		dir := args[PropertyPath].(string)
+		log.Trace().
+			Any("args", args).
+			Msg("Inside listDirectory")
+
+		dir, err := canonicalize(args[PropertyPath], fnobj.workingDir)
+		if err != nil {
+			return ResponseError(fnobj, err)
+		}
+
+		log.Trace().
+			Str("canonicalized_path", dir).
+			Send()
+
 		files, err := os.ReadDir(dir)
 
 		if err != nil {

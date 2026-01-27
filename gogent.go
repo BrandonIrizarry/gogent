@@ -135,7 +135,7 @@ func (g *Gogent) Init() (askerFn, error) {
 						Msg("Function call:")
 				}
 
-				funCallResponsePart := handleFunCall(funCall, g.WorkingDir)
+				funCallResponsePart := handleFunCall(funCall)
 				msgbuf = append(msgbuf, genai.NewContentFromParts([]*genai.Part{funCallResponsePart}, genai.RoleModel))
 			}
 		}
