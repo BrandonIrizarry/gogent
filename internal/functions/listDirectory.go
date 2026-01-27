@@ -9,10 +9,12 @@ import (
 	"google.golang.org/genai"
 )
 
+// Name implements [functionObject].
 func (ld listDirectory) Name() string {
 	return "listDirectory"
 }
 
+// Function implements [functionObject.]
 func (ld listDirectory) Function() functionType {
 	return func(args map[string]any) *genai.Part {
 		log.Trace().

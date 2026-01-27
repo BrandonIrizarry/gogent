@@ -9,10 +9,12 @@ import (
 	"google.golang.org/genai"
 )
 
+// Name implements [functionObject].
 func (g getFileContentRecursively) Name() string {
 	return "getFileContentRecursively"
 }
 
+// Function implements [functionObject].
 func (g getFileContentRecursively) Function() functionType {
 	// This callback reads contents of all files under a
 	// given directory. A depth parameter must be specified.

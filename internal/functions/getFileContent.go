@@ -4,10 +4,12 @@ import (
 	"google.golang.org/genai"
 )
 
+// Name implements [functionObject].
 func (g getFileContent) Name() string {
 	return "getFileContent"
 }
 
+// Function implements [functionObject].
 func (g getFileContent) Function() functionType {
 	// This callback reads the contents of the relative filepath
 	// mentioned in args, and returns the corresponding Part object. If
