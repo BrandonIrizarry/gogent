@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/BrandonIrizarry/gogent/internal/functions"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genai"
 )
 
@@ -27,6 +28,10 @@ func handleFunCall(funCall *genai.FunctionCall, workingDir string) *genai.Part {
 		}
 		funCall.Args[functions.PropertyPath] = filepath.Join(workingDir, path)
 	}
+
+	log.Trace().
+		Any("path", funCall.Args[functions.PropertyPath]).
+		Send()
 
 	return fn(funCall.Args)
 }
