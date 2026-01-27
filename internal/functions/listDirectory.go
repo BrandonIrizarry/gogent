@@ -9,19 +9,19 @@ import (
 	"google.golang.org/genai"
 )
 
-func (fnobj listDirectory) Name() string {
+func (ld listDirectory) Name() string {
 	return "listDirectory"
 }
 
-func (fnobj listDirectory) Function() functionType {
+func (ld listDirectory) Function() functionType {
 	return func(args map[string]any) *genai.Part {
 		log.Trace().
 			Any("args", args).
 			Msg("Inside listDirectory")
 
-		dir, err := canonicalize(args[PropertyPath], fnobj.workingDir)
+		dir, err := canonicalize(args[PropertyPath], ld.workingDir)
 		if err != nil {
-			return ResponseError(fnobj, err)
+			return ResponseError(ld, err)
 		}
 
 		log.Trace().
@@ -31,7 +31,7 @@ func (fnobj listDirectory) Function() functionType {
 		files, err := os.ReadDir(dir)
 
 		if err != nil {
-			return ResponseError(fnobj, err)
+			return ResponseError(ld, err)
 		}
 
 		bld := strings.Builder{}
@@ -40,16 +40,16 @@ func (fnobj listDirectory) Function() functionType {
 			info, err := file.Info()
 
 			if err != nil {
-				return ResponseError(fnobj, err)
+				return ResponseError(ld, err)
 			}
 
 			snippet := fmt.Sprintf("- %s: size=%d bytes, isDir: %v\n", info.Name(), info.Size(), info.IsDir())
 
 			if _, err := bld.WriteString(snippet); err != nil {
-				return ResponseError(fnobj, err)
+				return ResponseError(ld, err)
 			}
 		}
 
-		return ResponseOK(fnobj, bld.String())
+		return ResponseOK(ld, bld.String())
 	}
 }
