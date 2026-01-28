@@ -72,7 +72,8 @@ func (g *Gogent) Init() (askerFn, error) {
 
 	msgbuf := []*genai.Content{}
 
-	// This is the actual code that processes the user prompt.
+	// This is the actual code that processes the user prompt. It
+	// is the askerFn return value of Init.
 	//
 	// Note that this function captures many of the configuration
 	// parameters defined just above (like 'client'.)
