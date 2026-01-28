@@ -20,12 +20,6 @@ type Gogent struct {
 	MaxFilesize   int
 	LLMModel      string
 	MaxIterations int
-
-	tokenCounts tokenCounts
-}
-
-func (g Gogent) TokenCounts() tokenCounts {
-	return g.tokenCounts
 }
 
 // Init initializes state used by the LLM, providing both the values
@@ -102,8 +96,6 @@ func (g *Gogent) Init() (askerFn, error) {
 				}
 
 			}
-
-			g.incTokenCounts(response.UsageMetadata)
 
 			// Add the candidates to the message buffer. This
 			// conforms both to the Gemini documentation, as well
