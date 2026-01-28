@@ -77,9 +77,7 @@ func (g *Gogent) Init() (askerFn, error) {
 		msgbuf = append(msgbuf, genai.NewContentFromText(prompt, genai.RoleUser))
 
 		for i := range g.MaxIterations {
-			log.Info().
-				Int("iteration", i).
-				Msg("Start of function-call loop")
+			log.Info().Msgf("Function-call iteration %d", i)
 
 			response, err := client.Models.GenerateContent(
 				ctx,
