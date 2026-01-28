@@ -70,9 +70,13 @@ func (g *Gogent) Init() (askerFn, error) {
 	// Note that this function captures many of the configuration
 	// parameters defined just above (like 'client'.)
 	asker := func(prompt string) (string, error) {
-		// Initialize the message buffer with the user
-		// prompt. I'm making a careful note that this should
-		// be outside the function-call loop.
+		// Add the current user-prompt (the "question" being
+		// asked, to complete the metaphor) to the message
+		// buffer.
+		//
+		// This should be outside the function-call loop,
+		// since it functions as the obvious preamble to the
+		// LLM's subsequent thinking iterations..
 		msgbuf = append(msgbuf, genai.NewContentFromText(prompt, genai.RoleUser))
 
 		for i := range g.MaxIterations {
