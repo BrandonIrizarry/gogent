@@ -66,7 +66,7 @@ func Init(workingDir string, maxFilesize int) error {
 		"listDirectory": {
 			declaration: genai.FunctionDeclaration{
 				Name:        "listDirectory",
-				Description: "List names of files in a directory, along with their sizes, and whether they're a directory.",
+				Description: "List the names of files in a directory, along with their sizes, and whether they're a directory.",
 				Parameters: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
