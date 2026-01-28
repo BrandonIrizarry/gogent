@@ -1,3 +1,3 @@
 package gogent
 
-type askerFn func(string) (string, error)
+type askerFn func(string) (string, []TokenCount, error)

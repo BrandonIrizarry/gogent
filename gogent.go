@@ -22,6 +22,26 @@ type Gogent struct {
 	MaxIterations int
 }
 
+type TokenCount struct {
+	Prompt     int32
+	Thoughts   int32
+	Cached     int32
+	Candidates int32
+	ToolUse    int32
+	Total      int32
+}
+
+func convert(metadata *genai.GenerateContentResponseUsageMetadata) TokenCount {
+	return TokenCount{
+		Prompt:     metadata.PromptTokenCount,
+		Thoughts:   metadata.ThoughtsTokenCount,
+		Cached:     metadata.CachedContentTokenCount,
+		Candidates: metadata.CandidatesTokenCount,
+		ToolUse:    metadata.ToolUsePromptTokenCount,
+		Total:      metadata.TotalTokenCount,
+	}
+}
+
 // Init initializes state used by the LLM, providing both the values
 // of the Gogent struct's own fields, as well as setting up any state
 // the LLM client needs to persist across prompt/response cycles. It
@@ -69,7 +89,11 @@ func (g *Gogent) Init() (askerFn, error) {
 	//
 	// Note that this function captures many of the configuration
 	// parameters defined just above (like 'client'.)
-	asker := func(prompt string) (string, error) {
+	asker := func(prompt string) (string, []TokenCount, error) {
+		// The tokenCounts slice is where the token counts for
+		// the current question/answer cycle are stored.
+		var tokenCounts []TokenCount
+
 		// Add the current user-prompt (the "question" being
 		// asked, to complete the metaphor) to the message
 		// buffer.
@@ -99,11 +123,13 @@ func (g *Gogent) Init() (askerFn, error) {
 				// actual show-stopping error and
 				// return accordingly.
 				if strings.HasPrefix(msg, "Error 429") {
-					return msg, nil
+					return msg, nil, nil
 				} else {
-					return "", err
+					return "", nil, err
 				}
 			}
+
+			tokenCounts = append(tokenCounts, convert(response.UsageMetadata))
 
 			// Add the candidates to the message buffer. This
 			// conforms both to the Gemini documentation, as well
@@ -118,7 +144,7 @@ func (g *Gogent) Init() (askerFn, error) {
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				return response.Text(), nil
+				return response.Text(), tokenCounts, nil
 			}
 
 			for _, funCall := range funCalls {
@@ -143,7 +169,7 @@ func (g *Gogent) Init() (askerFn, error) {
 			}
 		}
 
-		return "", errors.New("LLM didn't generate a text response")
+		return "", tokenCounts, errors.New("LLM didn't generate a text response")
 	}
 
 	return asker, nil
