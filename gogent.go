@@ -31,17 +31,6 @@ type TokenCount struct {
 	Total      int32
 }
 
-func convert(metadata *genai.GenerateContentResponseUsageMetadata) TokenCount {
-	return TokenCount{
-		Prompt:     metadata.PromptTokenCount,
-		Thoughts:   metadata.ThoughtsTokenCount,
-		Cached:     metadata.CachedContentTokenCount,
-		Candidates: metadata.CandidatesTokenCount,
-		ToolUse:    metadata.ToolUsePromptTokenCount,
-		Total:      metadata.TotalTokenCount,
-	}
-}
-
 // Init initializes state used by the LLM, providing both the values
 // of the Gogent struct's own fields, as well as setting up any state
 // the LLM client needs to persist across prompt/response cycles. It
@@ -173,4 +162,17 @@ func (g *Gogent) Init() (askerFn, error) {
 	}
 
 	return asker, nil
+}
+
+// convert returns a digest (a TokenCount struct) of relevant data
+// inside the metadata argument.
+func convert(metadata *genai.GenerateContentResponseUsageMetadata) TokenCount {
+	return TokenCount{
+		Prompt:     metadata.PromptTokenCount,
+		Thoughts:   metadata.ThoughtsTokenCount,
+		Cached:     metadata.CachedContentTokenCount,
+		Candidates: metadata.CandidatesTokenCount,
+		ToolUse:    metadata.ToolUsePromptTokenCount,
+		Total:      metadata.TotalTokenCount,
+	}
 }
