@@ -43,13 +43,6 @@ func (g *Gogent) Init() (askerFn, error) {
 		TimeFormat: time.TimeOnly,
 	}).With().Caller().Logger()
 
-	log.Info().
-		Str("working_dir", g.WorkingDir).
-		Int("max_file_size", g.MaxFilesize).
-		Str("llm_model", g.LLMModel).
-		Int("max_iterations", g.MaxIterations).
-		Msg("Gogent configuration")
-
 	// Initialize any state needed by the function call objects
 	// themselves.
 	if err := functions.Init(g.WorkingDir, g.MaxFilesize); err != nil {
@@ -127,10 +120,7 @@ func (g *Gogent) Init() (askerFn, error) {
 
 			// The LLM is ready to give a textual response.
 			if len(funCalls) == 0 {
-				text := response.Text()
-				log.Info().Msg("Printing text response")
-
-				return text, nil
+				return response.Text(), nil
 			}
 
 			for _, funCall := range funCalls {
