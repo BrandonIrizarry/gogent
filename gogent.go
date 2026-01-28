@@ -15,22 +15,6 @@ import (
 	"google.golang.org/genai"
 )
 
-type Gogent struct {
-	WorkingDir    string
-	MaxFilesize   int
-	LLMModel      string
-	MaxIterations int
-}
-
-type TokenCount struct {
-	Prompt     int32
-	Thoughts   int32
-	Cached     int32
-	Candidates int32
-	ToolUse    int32
-	Total      int32
-}
-
 // Init initializes state used by the LLM, providing both the values
 // of the Gogent struct's own fields, as well as setting up any state
 // the LLM client needs to persist across prompt/response cycles. It
