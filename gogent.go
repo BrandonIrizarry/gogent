@@ -126,7 +126,19 @@ func (g *Gogent) Init() (askerFn, error) {
 					Any("args", funCall.Args).
 					Msgf("Function call: %s", funCall.Name)
 
-				funCallResponsePart := handleFunCall(funCall)
+				// Handle the function call. If the
+				// named function call isn't among our
+				// declared functions, report an error
+				// to the LLM. Else call the function
+				// with the given arguments.
+				var funCallResponsePart *genai.Part
+				fnObj, err := functions.FunctionObject(funCall.Name)
+				if err != nil {
+					funCallResponsePart = functions.ResponseError(fnObj, err)
+				} else {
+					funCallResponsePart = fnObj.Function()(funCall.Args)
+				}
+
 				msgbuf = append(msgbuf, genai.NewContentFromParts([]*genai.Part{funCallResponsePart}, genai.RoleModel))
 			}
 		}
