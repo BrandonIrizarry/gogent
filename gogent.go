@@ -122,13 +122,9 @@ func (g *Gogent) Init() (askerFn, error) {
 			}
 
 			for _, funCall := range funCalls {
-				for arg, val := range funCall.Args {
-					log.Trace().
-						Str("name", funCall.Name).
-						Str("arg", arg).
-						Any("value", val).
-						Msg("Function call:")
-				}
+				log.Trace().
+					Any("args", funCall.Args).
+					Msgf("Function call: %s", funCall.Name)
 
 				funCallResponsePart := handleFunCall(funCall)
 				msgbuf = append(msgbuf, genai.NewContentFromParts([]*genai.Part{funCallResponsePart}, genai.RoleModel))
