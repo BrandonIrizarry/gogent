@@ -71,8 +71,9 @@ func Init(workingDir string, maxFilesize int) error {
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
 						PropertyPath: {
-							Type:        genai.TypeString,
-							Description: "Relative path to directory",
+							Type: genai.TypeString,
+							Description: `Relative path to the specified directory. If unclear, confirm with
+the user whether they mean the working directory.`,
 						},
 					},
 				},
@@ -98,7 +99,7 @@ func FunctionDeclarations() []*genai.FunctionDeclaration {
 func FunctionObject(name string) (functionObject, error) {
 	cfg, ok := declarations[name]
 	if !ok {
-		return nil, fmt.Errorf("Unknown function: %s", name)
+		return nil, fmt.Errorf("unknown function: %s", name)
 	}
 
 	return cfg.fnObj, nil
