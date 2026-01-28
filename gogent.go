@@ -94,7 +94,6 @@ func (g *Gogent) Init() (askerFn, error) {
 				} else {
 					return "", err
 				}
-
 			}
 
 			// Add the candidates to the message buffer. This
