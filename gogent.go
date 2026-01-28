@@ -57,6 +57,11 @@ func (g *Gogent) Init() (askerFn, error) {
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: systemInstruction}}},
 	}
 
+	// The msgbuf slice has to be declared outside the definition
+	// of the asker function, since this is where the context
+	// across various invocations to the asker (as provided by,
+	// say, a REPL in the frontend) will persist: it's the LLM's
+	// "memory" of the conversation.
 	msgbuf := []*genai.Content{}
 
 	// This is the actual code that processes the user prompt. It
